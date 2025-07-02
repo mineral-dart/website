@@ -2,12 +2,12 @@ import { defineExplainerConfig } from '@/utils'
 
 export default defineExplainerConfig({
   meta: {
-    title: 'Explainer',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    title: 'Mineral framework',
+    description: 'Mineral is a Discord framework for designing discord bots in Dart',
     thumbnail: 'https://placehold.co/1200x630',
   },
   urls: {
-    github: 'https://github.com/LeadcodeDev/explainer',
+    github: 'https://github.com/mineral-dart/core',
     getStarted: '/docs/framework/getting-started',
     documentation: '/docs/framework/installation'
   },

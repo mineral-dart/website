@@ -32,9 +32,8 @@ const posts = await getCollection("blog", (post) => {
 });
 
 const header = {
-	title: "Explainer",
-	subtitle: "Docs, made easy.",
-	description: "Make elegant documentation for your project with Explainer.",
+	description:
+		"Open source framework that makes developing Discord applications intuitive and powerful. Create complete, high-performance, production-quality applications with complete confidence.",
 	actions: [
 		{
 			label: "Get started",
@@ -51,19 +50,22 @@ const header = {
 
 const cards = [
 	{
-		title: "Latest tweets",
-		description: "Lorem ipsum dolor sit amet.",
-		content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+		title: "🚀 Dart powered",
+		description: "Robust and secure",
+		content:
+			"Mineral is built with Dart, a modern, fast, and secure programming language.",
 	},
 	{
-		title: "Latest tweets",
-		description: "Lorem ipsum dolor sit amet.",
-		content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+		title: "🪴 Open source",
+		description: "MIT licensed",
+		content:
+			"Mineral is an free and open source framework to build Discord bots. You can use the tools you need, and nothing more.",
 	},
 	{
-		title: "Latest tweets",
-		description: "Lorem ipsum dolor sit amet.",
-		content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+		title: "⚙️ Modular and flexible",
+		description: "Built with modular architecture.",
+		content:
+			"Mineral allowing you to build your bot with the tools you need. You can use the tools you need, and nothing more.",
 	},
 ];
 
@@ -111,48 +113,50 @@ const marquee: MarqueeProps = {
 };
 
 const bentogrid: BentoGridProps = {
-	title: "What we offer",
-	description: "Discover all features that we provide",
+	subtitle: "Features",
+	title: "Discover the power of Mineral",
+	description:
+		"Mineral is designed to help you build Discord applications with ease. It provides a wide range of features that make development faster and more efficient.",
 	items: [
 		{
-			title: "Performance",
-			subtitle: "Lightning-fast builds",
+			title: "Developer experience",
+			subtitle: "Clean and lightweight API",
 			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In gravida justo et nulla efficitur, maximus egestas sem pellentesque.",
-			image:
-				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-performance.png",
-		},
-		{
-			title: "Releases",
-			subtitle: "Push to deploy",
-			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In gravida justo et nulla efficitur, maximus egestas sem pellentesque.",
-			image:
-				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-releases.png",
-		},
-		{
-			title: "Speed",
-			subtitle: "Built for power users",
-			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In gravida justo et nulla efficitur, maximus egestas sem pellentesque.",
+				"Mineral provides a clean and lightweight API, allowing you to build your bot with ease. It's designed to be easy to use and understand.",
 			image:
 				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-speed.png",
 		},
 		{
-			title: "Integrations",
-			subtitle: "Connect your favorite tools",
+			title: "Built-in tools",
+			subtitle: "Built-in tools to help you build your bot",
 			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In gravida justo et nulla efficitur, maximus egestas sem pellentesque.",
+				"Mineral provides a set of built-in tools to help you build your bot with ease. It's designed to be easy to use and understand.",
 			image:
-				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-integrations.png",
+				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-performance.png",
 		},
 		{
-			title: "Network",
-			subtitle: "Globally distributed CDN",
+			title: "We help you to build",
+			subtitle: "Interactive CLI",
 			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In gravida justo et nulla efficitur, maximus egestas sem pellentesque.",
+				"Mineral provides a set of built-in tools to help you build your bot with ease. It's designed to be easy to use and understand.",
+			image:
+				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-releases.png",
+		},
+		{
+			title: "Incremental builds",
+			subtitle: "Hot reload in development mode",
+			description:
+				"Mineral provides incremental builds, allowing you to see your changes in real time without restarting your application.",
 			image:
 				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-network.png",
+		},
+		{
+			title: "Ecosystem",
+			subtitle: "Large ecosystem of packages",
+			description:
+				"Mineral has a large ecosystem of packages, allowing you to build your bot with ease. It's designed to be easy to use and understand.",
+			image:
+				"https://tailwindcss.com/plus-assets/img/component-images/bento-01-integrations.png",
 		},
 	],
 };
@@ -165,8 +169,9 @@ const bentogrid: BentoGridProps = {
 			<div
 				class="px-5 sm:px-0 relative z-10 flex flex-col items-center justify-center gap-5 text-center"
 			>
-				<h1 class="text-7xl font-bold text-primary">{header.title}</h1>
-				<p class="text-4xl text-foreground font-bold">{header.subtitle}</p>
+				<h1 class="max-w-3xl text-7xl font-bold text-foreground">
+					The modern Discord <span class="text-primary/80">framework</span> for Dart.
+				</h1>
 				<p class="text-lg text-foreground font-light max-w-xl">
 					{header.description}
 				</p>

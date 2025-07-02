@@ -14,14 +14,17 @@ const { title = config.meta.title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
 
-    <title>{title}</title>
+    <title>{`${title} - The first Discord framework for Dart`}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={config.meta.description} />
     <meta name="image" content={config.meta.thumbnail} />
 
-    <meta property="og:title" content={title} />
+    <meta
+      property="og:title"
+      content={`${title} - The first Discord framework for Dart`}
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url.href} />
     <meta property="og:description" content={config.meta.description} />
