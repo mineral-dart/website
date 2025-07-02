@@ -6,3 +6,78 @@ icon: lucide:play
 order: 1
 ---
 # Installation
+
+Before embarking on this crazy discord adventure, you will need to follow the steps outlined below to set up a clean and healthy project.
+
+---
+
+## Prerequisites
+Please make sure you have the following tools installed on your machine before you start.
+
+## Dart lang
+The Mineral framework has been developed entirely in the Dart programming language, so you will need to install it in your development environment first. In order to best install it, please refer to the [official documentation](https://dart.dev/get-dart).
+
+> [!note]
+> The version of the Dart language sdk must be at least `^3.5.2`.
+
+---
+
+## Setup
+
+### From the CLI
+
+You can use the Mineral CLI to create a new project.
+
+Follow the steps below to install the CLI.
+
+:::code-group auto
+```bash
+dart pub global activate mineral_cli [version]
+
+cd path/to/your/projects
+mineral create my_project
+```
+:::
+
+> [!note]
+> More details about the CLI can be found in the [`command line`](/docs/api/cli) section.
+
+---
+
+### From scratch
+
+Use the following command to start a new blank Dart project.
+```bash
+dart create my_project
+```
+
+After creating the project, you will need to add the Mineral framework to your `pubspec.yaml` file.
+
+:::code-group labels=[pubspec.yaml]
+```yaml
+dependencies:
+  mineral: ^4.0.0-dev.10
+  mineral_cache: ^1.0.0-dev.3
+```
+:::
+
+> [!note]
+> Please verify the lasted version of the [`core`](https://pub.dev/packages/mineral) and [`cache`](https://pub.dev/packages/mineral_cache) packages directly on registry.
+
+Then run the following command to install the dependencies.
+
+:::code-group auto
+```bash
+dart pub get
+```
+:::
+
+Assurez-vous d'avoir la structure minimale suivante dans votre projet.
+
+```
+├── bin
+│  └── main.dart
+│
+├── pubspec.yaml
+└── .env
+```
