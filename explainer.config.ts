@@ -12,19 +12,33 @@ export default defineExplainerConfig({
     documentation: '/docs/framework/installation'
   },
   docs: {
-    framework: {
-      icon: 'lucide:cuboid',
-      label: 'Framework',
-      href: '/docs/framework/getting-started',
-      baseUrl: '/docs/framework',
-      baseRepositoryUrl: 'https://github.com/LeadcodeDev/explainer',
+    guide: {
+      icon: 'lucide:book-open',
+      label: 'Guide',
+      href: '/docs/guide/installation',
+      baseUrl: '/docs/guide',
+      baseRepositoryUrl: 'https://github.com/mineral-dart/website',
     },
-    syntax: {
-      icon: 'lucide:pencil-line',
-      label: 'Syntax',
-      href: '/docs/syntax/texts',
-      baseUrl: '/docs/syntax',
-      baseRepositoryUrl: 'https://github.com/LeadcodeDev/explainer',
+    api: {
+      icon: 'lucide:code-xml',
+      label: 'API',
+      href: '/docs/api/events',
+      baseUrl: '/docs/api',
+      baseRepositoryUrl: 'https://github.com/mineral-dart/website',
+    },
+    concepts: {
+      icon: 'lucide:book-dashed',
+      label: 'Concepts',
+      href: '/docs/concepts/container',
+      baseUrl: '/docs/concepts',
+      baseRepositoryUrl: 'https://github.com/mineral-dart/website',
+    },
+    examples: {
+      icon: 'lucide:app-window-mac',
+      label: 'Examples',
+      href: '/docs/examples/ping-pong',
+      baseUrl: '/docs/examples',
+      baseRepositoryUrl: 'https://github.com/mineral-dart/website',
     },
   },
   blog: {
@@ -44,14 +58,24 @@ export default defineExplainerConfig({
       label: 'Docs',
       items: [
         {
-          label: 'Framework',
-          description: 'Discover Explainer framework guidelines and usages.',
-          href: '/docs/framework/getting-started',
+          label: 'Guide',
+          description: 'Build your first bot with the following guide.',
+          href: '/docs/guide/installation',
         },
         {
-          label: 'Syntax',
-          description: 'Learn markdown syntax and markdown components.',
-          href: '/docs/syntax/texts',
+          label: 'API',
+          description: 'Learn the API of the framework.',
+          href: '/docs/api/events',
+        },
+        {
+          label: 'Concepts',
+          description: 'Learn the concepts of the framework.',
+          href: '/docs/concepts/container',
+        },
+        {
+          label: 'Examples',
+          description: 'Learn the examples of the framework.',
+          href: '/docs/examples/ping-pong',
         },
       ],
     },

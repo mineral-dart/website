@@ -9,13 +9,23 @@ export const docSchema = z.object({
   icon: z.string().optional(),
 })
 
-const syntax = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/syntax" }),
+const guide = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/guide" }),
   schema: docSchema
 })
 
-const framework = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/framework" }),
+const api = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/api" }),
+  schema: docSchema
+})
+
+const concepts = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/concepts" }),
+  schema: docSchema
+})
+
+const examples = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/examples" }),
   schema: docSchema
 })
 
@@ -31,4 +41,4 @@ const blog = defineCollection({
   }),
 })
 
-export const collections = { blog, framework, syntax };
+export const collections = { blog, guide, api, concepts, examples };

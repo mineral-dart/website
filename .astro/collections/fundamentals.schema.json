@@ -1,0 +1,35 @@
+{
+  "$ref": "#/definitions/fundamentals",
+  "definitions": {
+    "fundamentals": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permalink": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "order"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
