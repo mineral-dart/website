@@ -6,3 +6,49 @@ icon: lucide:lock
 order: 1
 ---
 # Immutability
+
+Immutability is a core concept in functional programming and software development that ensures the state of an object
+cannot be modified after it is created. This principle helps in creating predictable and maintainable code by avoiding
+side effects and ensuring that data remains consistent throughout the application lifecycle.
+
+---
+
+## Benefits
+
+- **Predictability**: Immutable objects provide a predictable state, making it easier to reason about the code.
+- **Debugging**: Debugging becomes simpler as the state of an object does not change unexpectedly.
+- **Cacheability**: Immutable objects can be safely cached and reused without the risk of modification.
+
+---
+
+## Impact on the code
+
+In Mineral, data objects are immutable by default.
+This means that once an object is created, its state cannot be changed.
+
+> [!note]
+> If you need to compare an old object with a new one, you should get a new object from the API.
+
+It is important to note that every event received by Discord events is made immutable by default.
+This means that when you try to perform an asynchronous action to Discord's HTTP API, the object used as the access
+point to the method will not be altered despite the success of the operation.
+
+:::code-group labels=[main.dart]
+```dart
+Future<void> main(_, port) async {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .build();
+
+  client.events.server.serverCreate((server) async {
+    await server.setName('New Server');
+    
+    // Server name is still the same
+    assert(server.name != 'New Server');
+  });
+
+  await client.init();
+}
+```
+:::
+
