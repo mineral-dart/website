@@ -6,3 +6,201 @@ icon: lucide:folder-tree
 order: 2
 ---
 # Structure
+
+The folder structure of a project is very important.
+It helps you to organize your project in a better way. It also helps you to understand the project structure easily.
+
+In this guide, we will discuss the folder structure of a project.
+
+---
+
+## Minimal structure
+
+The minimal structure proposed by the project consists of a simple source folder containing your business code.
+The `bin` folder is used to use the `hmr` component in your application during the development phase; you can change the name of the `source` folder, but we do not recommend deleting it.
+
+```
+├── bin
+│  └── main.dart
+│
+├── lib
+│  ├── events
+│  └── commands
+│
+├── pubspec.yaml
+└── .env
+```
+
+This architecture is classic in the world of Discord bots. It's simple yet meets the need for rapid implementation.
+
+One of the limitations arises when your application grows more or less drastically: you'll end up with a multitude of files at the same level, which can lead to poor understanding of your application.
+
+---
+
+## N-tier structure
+
+When you're developing increasingly complex applications, you generally lose readability and maintainability
+and maintainability if you don't focus on a stable, future-proof software architecture.
+
+> [!note]
+> We recommend the following structure.
+
+One approach we recommend is the module-based architecture.
+This involves dividing your application into several business modules that are independent of each other.
+
+```
+├── assets
+│  ├── image1.png
+│  └── image2.png
+│
+├── bin
+│  └── main.dart
+│
+├── lib
+│  ├── commons
+│  │  ├── helper.dart
+│  │  └── api.dart
+│  │
+│  ├── first_module
+│  │  ├── events
+│  │  ├── commands
+│  │  └── provider.dart
+│  │
+│  └── second_module
+│     ├── events
+│     ├── commands
+│     └── provider.dart
+│
+├── pubspec.yaml
+└── .env
+```
+
+This architecture has several notable advantages: it allows you to:
+- divide your application code into modules, each representing a business fragment
+- simplifies the integration of your code across multiple projects thanks to [`providers`](/docs/api/providers)
+
+In this architecture, we use [`providers`](/docs/api/providers) allowing us to "move" the entry point of our module in order to facilitate the segmentation of our code.
+
+To simplify the management of your modules, we recommend that you create a `provider.dart` file within each which will
+serve as the entry point for each module.
+
+:::code-group labels=[main.dart, module/provider.dart]
+```dart
+final client = Client()
+  .registerProvider(Provider.new) // [!code ++]
+  .build();
+```
+
+```dart
+final class Provider extends Provider {
+  final MineralClientContract _client;
+
+  Provider(this._client) {
+    _client.register(MyEvent.new); // [!code ++]
+    _client.registerCommand(MyCommand.new); // [!code ++]
+  }
+}
+```
+:::
+
+---
+
+## Layered architecture
+
+When we talk about modular architecture, we quickly come to hexagonal architecture.
+This architecture allows you to decouple the different parts of your application according to their core business and
+responsibility within it.
+
+> [!note]
+> We recommend the following structure.
+
+```
+├── bin
+│  └── main.dart
+│
+├── lib
+│  ├── ui
+│  │  ├── events
+│  │  │  ├── ready_event.dart
+│  │  │  └── message_create_event.dart
+│  │  │
+│  │  └── commands
+│  │     └── foo_command.dart
+│  │
+│  ├── services
+│  │  └── foo_service.dart
+│  │
+│  ├── data
+│  │  ├── models
+│  │  └── repositories
+│  │
+│  └── provider.dart
+│
+├── pubspec.yaml
+└── .env
+```
+
+The above structure is an example that we recommend to help you adopt a modular, scalable and maintainable architecture by decoupling the different parts of your application as much as possible.
+However, it will not always suit your business needs and will need to be adapted accordingly.
+
+| Directory | Description |
+|----------|-------------|
+| `ui` | Contains the various parts of your application which are related to your business, including `events` and `commands`. |
+| `services` | Contains the services which allow you to manipulate the data in your application; they will generally be used from the `ui`. |
+| `data` | Contains the DTOs and repositories that allow you to manipulate the data in your application. An example of use is the use of a remote REST service to which you need to make HTTP calls. |
+| `provider` | The entry point of your module who's call under the `main` file. |
+
+---
+
+## Hexagonal architecture
+
+When we talk about modular architecture, we quickly come to hexagonal architecture.
+This architecture allows you to decouple the different parts of your application according to their core business and
+responsibility within it.
+
+> [!note]
+> We recommend the following structure.
+
+```
+├── bin
+│  └── main.dart
+│
+├── lib
+│  └── application
+│  │  └── tickets
+│  │     ├── commands
+│  │     ├── events
+│  │     └── ticket_provider.dart
+│  │
+│  ├── domain
+│  │  └── tickets
+│  │     ├── entities
+│  │     ├── repositories
+│  │     ├── dtos
+│  │     └── contracts
+│  │
+│  └── infrastructure
+│     └── tickets
+│        ├── repositories
+│        └── dtos
+│   
+├── pubspec.yaml
+└── .env
+```
+
+This architecture has several notable advantages: it allows you to:
+- divide your application code into modules, each representing a business fragment
+- simplifies the integration of your code across multiple projects thanks to [`providers`](/docs/api/providers)
+- isolate the business logic of your application from the infrastructure layer
+
+The `application` directory contains all of our business context divided into modules, allowing better readability and maintainability of our code.
+
+| Directory | Description |
+|----------|-------------|
+| `bin` | Contains the entry point of your application. |
+| `application` | Contains the various parts of your application which are related to your business, including `events`, `commands`, `states` or any mineral component, it can be split into modules. |
+| `domain` | Contains the entities, DTOs, repositories, contracts that allow you to manipulate the data in your application. He contains the business logic of your application and must not depend on anything other than itself. |
+| `infrastructure` | Contains implementations that must interact with external services such as APIs, BDDs and queues. Each implementation must implement a contract defined in the domain. |
+
+> [!note]
+> You can find a sample implementation of this architecture [here](https://github.com/LeadcodeDev/mineral_beta_bot_demo).
