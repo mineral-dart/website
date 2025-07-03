@@ -5,4 +5,220 @@ permalink: data-caching
 icon: lucide:database
 order: 2
 ---
-# Data caching
+# Data Caching
+
+When developing a Discord application, it is customary to save objects in memory. This has the advantage of making them instantly accessible, but also of preserving their integrity.
+
+---
+
+## Problem
+On the scale of a small application, this does not have any harmful effects, but as your application evolves and has to accommodate more and more members, the memory is used more and more until it reaches a threshold that we call "no return", which in some cases can more or less impact the entire infrastructure on which your application is hosted.
+
+## Concrete example
+
+Let's imagine the hypothetical case of an application that has to support more than 5,000 Discord servers, each with more than 300,000 members.
+
+> [!note]
+> The values taken as examples, such as the number of Discord servers and the number of members on each, are hypothetical and fictitious.
+
+This mass of data represents a considerable load on the memory of the machine hosting your application.
+
+Traditionally it is chosen to remove the existing Discord interaction library in its preferred language in order to abstract itself from its data management method, so the application reverts to a state of API call to the HTTP API and traditional listening on the Discord websocket in order to no longer depend on your application's memory.
+
+## Caching system
+Thanks to Mineral's caching system, the management of this memory is deported to a caching provider that allows you to move this memory when it is needed, so you can move it to another machine.
+
+Thanks to the Dart language, we can compile our applications in order to drastically reduce our power consumption. To this end, and in order to reduce this consumption as much as possible, which in some cases remains high, we are providing a caching service that can be used to deport the location of objects currently in memory to a remote service.
+
+> [!warning]
+> Please note that depending on your chosen caching solution, certain costs may apply.
+> This is particularly visible on cloud solutions that calculate your rates based on consumption.
+
+The Mineral framework offers official support for several caching providers.
+
+---
+
+### Memory Provider
+This is the simplest caching solution, as it simply stores the data in memory.
+
+To use it, you need to add the `mineral_cache` package to your `pubspec.yaml` file and then declare its use in your Mineral client builder.
+
+:::code-group labels=[main.dart, pubspec.yaml]
+```dart
+final client = ClientBuilder()
+  .setCache(MemoryProvider.new) // [!code ++]
+  .build();
+```
+
+```yaml
+dependencies:
+  mineral_cache: ^0.0.1 # [!code ++]
+```
+:::
+
+> [!note]
+> No environment variable is required to use this provider.
+
+---
+
+### Redis Provider
+Based on a powerful caching solution, the Redis provider allows you to deport your growing memory to an external solution.
+
+To use it, you need to add the `mineral_cache` package to your `pubspec.yaml` file and then declare its use in your Mineral client builder.
+
+:::code-group labels=[main.dart, pubspec.yaml]
+```dart
+Future<void> main(_, port) async {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .setCache((_) => RedisProvider(
+      host: 'localhost',
+      port: 6379,
+      password: 'password',
+    ))
+    .build();
+}
+```
+```yaml
+dependencies:
+  mineral_cache: ^0.0.1 # [!code ++]
+```
+:::
+
+To simplify the injection of environment variables, the provider provides an `factory` to used environment variables as default values.
+
+```dart
+Future<void> main(_, port) async {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    // [!code --:5]
+    .setCache((_) => RedisProvider(
+      host: 'localhost',
+      port: 6379,
+      password: 'password',
+    ))
+    .setCache(RedisProvider.fromEnvironment) // [!code ++]
+    .build();
+}
+```
+
+> [!note]
+> It is important to note that using the `factory` automatically validates the variables required in your environment.
+
+The minimum environment variables are :
+
+:::code-group labels=[.env, schema.dart]
+```dotenv
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6380
+REDIS_PASSWORD=redis
+```
+```dart
+final class RedisEnv implements DefineEnvironment {
+  static final String redisHost = 'REDIS_HOST';
+  static final String redisPort = 'REDIS_PORT';
+  static final String redisPassword = 'REDIS_PASSWORD';
+
+  @override
+  final Map<String, EnvSchema> schema = {
+    redisHost: env.string(),
+    redisPort: env.number(),
+    redisPassword: env.string(),
+  };
+}
+```
+:::
+
+## Extending the Cache Provider
+If you want to use a caching solution that is not officially supported, you can extend Mineral's caching system by creating your own provider.
+
+To do this, you need to create a class that extends the `CacheProvider` class and implement the methods that are required.
+
+:::code-group labels=[my_provider.dart, contract.dart]
+```dart
+final class MyProvider implements CacheProviderContract {
+  @override
+  String get name => 'my_provider';
+
+  @override
+  late final LoggerContract logger;
+  
+  // Implement all required methods and properties
+  // provided by the CacheProviderContract.
+}
+```
+
+```dart
+abstract interface class CacheProviderContract {
+  String get name;
+
+  abstract LoggerContract logger;
+
+  FutureOr<void> init();
+
+  Future<int> length();
+  Future<List<T>> getAll<T extends dynamic>();
+  Future<String?> get(String? key);
+  Future<String> getOrFail(String key, { Exception Function()? onFail });
+  Future<bool> has(String key);
+  Future<void> put<T>(String key, T object);
+  Future<void> remove(String key);
+  Future<void> removeMany(List<String> key);
+  Future<void> clear();
+
+  Future<void> dispose();
+  Future<bool> getHealth();
+}
+```
+:::
+
+Then you can use your provider like this.
+```dart
+void main(_, port) {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .setCache((_) => MyProvider()) // [!code highlight]
+    .build();
+}
+```
+
+If you want to use environment variables to configure your provider, you can create an `factory` named `fromEnvironment` to simplify injecting them.
+
+:::code-group labels=[main.dart, my_provider.dart, schema.dart]
+```dart
+void main(_, port) {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .setCache((_) => MyProvider()) // [!code --]
+    .setCache(MyProvider.fromEnvironment) // [!code ++]
+    .build();
+}
+```
+```dart
+final class MyProvider implements CacheProviderContract {
+  // Your complete implementation…
+  
+  factory MyProvider.fromEnvironment(env) {
+    // Validate before returning provider
+    env.defineOf(MyProviderEnv.values);
+    
+    return MyProvider();
+  }
+}
+```
+
+```dart
+final class MyProviderEnv implements DefineEnvironment {
+  static final String myHost = 'MY_HOST';
+  static final String myPort = 'MY_PORT';
+  static final String myPassword = 'MY_PASSWORD';
+
+  @override
+  final Map<String, EnvSchema> schema = {
+    myHost: env.string(),
+    myPort: env.number(),
+    myPassword: env.string(),
+  };
+}
+```
+:::
