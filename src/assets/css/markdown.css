@@ -307,7 +307,6 @@ html.dark .prose>.astro-code {
   }
 
   &[data-language="plaintext"] code .line {
-    margin: -2px 0;
     padding: 0;
     color: oklch(37.1% 0 0);
   }

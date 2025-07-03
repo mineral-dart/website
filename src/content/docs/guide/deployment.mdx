@@ -6,3 +6,352 @@ icon: lucide:rocket
 order: 6
 ---
 # Deployment
+
+Deployment is an extremely important part of the process, but one that most developers dread because it falls outside the developer's core business and into that of devops.
+
+> [!important]
+> We recommend deploying via a docker system, see the [dedicated section](/docs/guide/deployment#deploy-with-docker).
+
+---
+
+## Build your application
+
+The principal aim of Mineral is to simplify the developer experience. 
+That's why we've created a simple command to build your application and create an executable. 
+
+This executable is a single file that you can deploy anywhere, without having to worry about dependencies or other configuration. 
+
+Besides, this allows you to share only the executable with your customers and not all the source code.
+
+> [!warning]
+> Dart creates an executable for your operating system. If you build on Windows, you will receive a Windows executable which doesn't work on Linux.
+
+We're using the `dart compile exe` command to build your application in `dist` directory.
+
+:::code-group auto
+```bash
+dart compile exe bin/main.dart -o ./dist/main.exe
+```
+:::
+
+---
+
+## Deploy with pm2
+
+PM2 is a production process manager for any applications that helps you keep applications alive forever and reload them without downtime. It plays a crucial role in deployment by managing your application's lifecycle, handling crashes, and providing monitoring capabilities.
+
+:::code-group labels=[ecosystem.config.js]
+```js
+module.exports = {
+  apps: [
+    {
+      name: "discord-bot",
+      script: "./dist/main.exe",
+      interpreter: "none",
+      watch: false,
+      env: {
+        DART_ENV: "production",
+        TOKEN: "your_token",
+        DISCORD_REST_API_VERSION: 10,
+        DISCORD_WS_VERSION: 10,
+        INTENT: "3276799",
+        LOG_LEVEL: "TRACE"
+      },
+      error_file: "./logs/err.log",
+      out_file: "./logs/out.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      restart_delay: 5000
+    }
+  ]
+};
+```
+:::
+
+---
+
+## Docker
+
+Docker is a powerful cross-platform containerisation tool that is widely used in the professional world.
+
+Before starting a deployment with Docker, please refer to the [official documentation](https://www.docker.com) to ensure that your installation is correct.
+
+### Build your image
+
+Now that your installation is done, we will create a Dockerfile at the root of our project with the following information. In our instructions we use the official Docker image of the Dart language.
+
+:::code-group auto
+```dockerfile
+FROM dart:stable AS build
+
+WORKDIR /app
+COPY . /app
+WORKDIR /app
+
+RUN dart pub get
+RUN dart compile exe src/main.dart -o mineral
+
+FROM scratch
+COPY --from=build /runtime /
+COPY --from=build /app/mineral /app/
+COPY --from=build /app/pubspec.yaml /
+
+CMD ["/app/mineral"]
+```
+:::
+
+---
+
+### Docker CLI
+
+Now that the Docker image is configured, all we have to do is build it with the following command and then start it.
+
+:::code-group labels=[build, start]
+```bash
+docker build -t [name]:latest .
+```
+```bash
+docker run -d --name [display_name] [name]
+```
+:::
+
+---
+
+### Docker Compose
+
+Docker Compose is a tool that allows you to manage multiple containers at the same time. It can be very useful if you want to deploy your application with a database for example.
+
+To use it, you just have to create a docker-compose.yml file at the root of your project with the following information.
+
+:::code-group labels=[docker-compose]
+```yaml
+version: '3.8'
+
+services:
+  bot:
+    container_name: bot
+    image: mineral
+    restart: always
+    environment:
+      - DART_ENV=production
+      - TOKEN=your_token
+      - DISCORD_REST_API_VERSION=10
+      - DISCORD_WS_VERSION=10
+      - INTENT=3276799
+      - LOG_LEVEL=TRACE
+```
+:::
+
+If you have chosen `Redis` as your caching solution, please add the service to the `docker-compose.yaml`.
+
+:::code-group labels=[docker-compose]
+```yaml
+version: '3.8'
+
+services:
+  bot:
+    container_name: bot
+    image: mineral
+    restart: always
+    # [!code ++:2]
+    depends_on:
+      - cache
+    environment:
+      - DART_ENV=production
+      - TOKEN=your_token
+      - HTTP_VERSION=10
+      - WSS_VERSION=10
+      - INTENT=3276799
+      - LOG_LEVEL=TRACE
+  # [!code ++:8]
+  cache:
+    container_name: cache
+    image: redis
+    restart: always
+    ports:
+      - '6380:6379'
+    environment:
+      - REDIS_PASSWORD=redis
+```
+:::
+
+---
+
+## Kubernetes
+
+Kubernetes is a powerful container orchestration platform that provides advanced deployment, scaling, and management capabilities for containerized applications. It's particularly useful for production environments where you need high availability, automatic scaling, and robust service discovery.
+
+### Prerequisites
+
+Before deploying to Kubernetes, ensure you have:
+- A Kubernetes cluster (local with Minikube, cloud provider, or self-hosted)
+- `kubectl` CLI tool installed and configured
+- Your Docker image pushed to a container registry
+- Helm installed (for Helmfile deployment)
+
+### Basic Kubernetes Deployment
+
+Create a basic Kubernetes deployment manifest for your Mineral application
+
+
+We will consider the following structure for our application :
+
+```
+├── kubernetes
+│  └── chart
+│     ├── templates
+│     │  └── deployment.yaml
+│     ├── Chart.yaml
+│     └── values.yaml
+├── bin
+│  └── main.dart
+├── lib
+├── pubspec.yaml
+└── .env
+```
+
+> [!warning]
+> You cannot use replicas because the bot is a client who subscribe to the Discord websocketgateway.
+> If you run `N` instances of the bot, you will have `N` identical events.
+
+:::code-group labels=[chart.yaml, deployment.yaml, values.yaml]
+```yaml
+apiVersion: v2
+name: mineral-bot
+description: A Helm chart for Mineral Discord Bot
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+```
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mineral-bot
+  labels:
+    app: mineral-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mineral-bot
+  template:
+    metadata:
+      labels:
+        app: mineral-bot
+    spec:
+      containers:
+      - name: mineral-bot
+        image: your-registry/mineral:latest
+        env:
+          - name: DART_ENV
+            value: {{ .Values.dartEnv | quote  }}
+          - name: DISCORD_REST_API_VERSION
+            value: {{ .Values.discordRestApiVersion | quote  }}
+          - name: DISCORD_WS_VERSION
+            value: {{ .Values.discordWsVersion | quote  }}
+          - name: INTENT
+            value: {{ .Values.intent | quote  }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | quote  }}
+          - name: TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.kubeSecret }}
+                key: token
+```
+```yaml
+dartEnv: production
+discordRestApiVersion: 10
+discordWsVersion: 10
+intent: '3276799'
+logLevel: trace
+
+kubeSecret: mineral-credentials
+```
+:::
+
+---
+
+### Deploy with Helmfile
+
+Helmfile is a declarative way to deploy Helm charts, making it easier to manage complex Kubernetes deployments across multiple environments.
+
+We will consider the following structure for our application :
+
+```
+├── kubernetes
+│  ├── chart
+│  │  ├── templates
+│  │  │  └── deployment.yaml
+│  │  ├── Chart.yaml
+│  │  └── values.yaml
+│  │
+// [!code ++:9]
+│  └── helmfiles
+│     ├── helmfile.yaml
+│     │
+│     └── templates
+│        ├── development
+│        │  └── values.yaml
+│        │
+│        └── production
+│           └── values.yaml
+├── bin
+│  └── main.dart
+├── lib
+├── pubspec.yaml
+└── .env
+```
+
+Create a `helmfile.yaml` to manage your deployment:
+
+:::code-group labels=[helmfile.yaml]
+```yaml
+environments:
+  development:
+  production:
+---
+releases:
+  - name: mineral-bot
+    namespace: mineral
+    chart: ../chart
+    version: 0.1.0
+    values:
+      - ./{{ .Environment.Name }}/values.yaml
+```
+:::
+
+#### Environment-specific Values
+
+Create environment-specific value files:
+
+:::code-group labels=[[environment]/values.yaml]
+```yaml
+image:
+  tag: "xxxxx"
+```
+:::
+
+#### Deploy with Helmfile
+
+Deploy your application using Helmfile:
+
+:::code-group labels=[deploy]
+```bash
+# Deploy to the target environment
+helmfile sync -f ./kubernetes/helmfiles/helmfile.yaml -e [environment]
+
+# List releases
+helmfile -f ./kubernetes/helmfiles/helmfile.yaml list
+
+# Delete deployment
+helmfile -f ./kubernetes/helmfiles/helmfile.yaml delete
+```
+:::
+
+This Kubernetes and Helmfile setup provides a production-ready deployment with :
+- Multi-environment support
+- Health checks and monitoring
+- Redis integration
+- Secret management
+
