@@ -6,3 +6,55 @@ icon: lucide:key-round
 order: 3
 ---
 # Environment variables
+
+Environment variables serve the purpose of storing secrets like the database password, the app secret, or an API key outside of your application codebase.
+
+In addition, environment variables can be used to obtain different configurations depending on the environment, such as the use of a secret to use an API or database identifiers.
+
+> [!note]
+> Please read the full documentation of the environment in the dedicated [section](/docs/api/environment-variables).
+
+---
+
+We're providing an `Environment` class to access the various environment variables in your application.
+
+:::code-group labels=[.env, schema.dart]
+```dotenv
+DART_ENV=development
+TOKEN=your_token
+DISCORD_REST_API_VERSION=10
+DISCORD_WS_VERSION=10
+INTENT=3276799
+LOG_LEVEL=TRACE
+```
+```dart
+final class AppEnv implements DefineEnvironment {
+  static final String dartEnv = 'DART_ENV';
+  static final String token = 'TOKEN';
+  static final String discordRestHttpVersion = 'DISCORD_REST_API_VERSION';
+  static final String discordWssVersion = 'DISCORD_WS_VERSION';
+  static final String intent = 'INTENT';
+  static final String logLevel = 'LOG_LEVEL';
+
+  @override
+  final Map<String, EnvSchema> schema = {
+    dartEnv: env.enumerable(DartEnv.values),
+    token: env.string(),
+    discordRestHttpVersion: env.number(),
+    discordWssVersion: env.number(),
+    intent: env.number(),
+    logLevel: env.enumerable(LogLevel.values),
+  };
+}
+
+enum DartEnv implements Enumerable<String> {
+  development('development'),
+  production('production');
+
+  @override
+  final String value;
+
+  const DartEnv(this.value);
+}
+```
+:::

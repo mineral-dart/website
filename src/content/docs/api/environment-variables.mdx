@@ -6,3 +6,86 @@ icon: lucide:key-round
 order: 1
 ---
 # Environment variables
+
+Environment variables serve the purpose of storing secrets like the database password, the app secret, or an API key outside of your application codebase.
+
+In addition, environment variables can be used to obtain different configurations depending on the environment, such as the use of a secret to use an API or database identifiers.
+
+---
+
+## Introduction
+Normally, environment variables are accessible via Dart's `Platform` class, but this is said to be immutable, so we can't add data relating to our application to it.
+
+So we're providing an `Environment` class to access the various environment variables in your application.
+
+> [!important]
+> Environment variable management is deported to an agnostic package [`env_guard`](https://pub.dev/packages/env_guard) created for this purpose and which can be used in any Dart or Flutter project.
+
+
+The environment management is done from the `Env` class which is made available from the `env_guard` package.
+
+:::code-group labels=[env.dart]
+```dart
+abstract interface class Env {
+  T get<T>(String key, {T? defaultValue});
+
+  Map<String, dynamic> validate(
+    Map<String, EnvSchema> schema,
+    Map<String, dynamic> data,
+  );
+
+  void define(
+    Map<String, EnvSchema> schema, {
+    Directory? root,
+    bool includeDartEnv = true,
+  });
+
+  void defineOf<T extends DefineEnvironment>(T Function() source, { 
+    Directory? root, 
+    bool includeDartEnv = true 
+  });
+}
+```
+:::
+
+We recommend that you use an `.env` environment file to store your environment variables as far as possible, although you can inject your variables using your CLI.
+
+:::code-group auto
+```bash
+dart run src/main.dart --dart-define=MY_VARIABLE="Hello World"
+```
+:::
+
+> [!note]
+> See more in Dart's [documentation](https://dart.dev/guides/environment-declarations).
+
+
+:::code-group labels=[.env, main.dart, schema.dart]
+```dotenv
+DART_ENV=development
+TOKEN=your_token
+DISCORD_REST_API_VERSION=10
+DISCORD_WS_VERSION=10
+INTENT=3276799
+LOG_LEVEL=TRACE
+```
+```dart
+void main() {
+  env.defineOf(AppEnv.new);
+}
+```
+```dart
+final class AppEnv implements DefineEnvironment {
+  static final String host = 'HOST';
+  static final String port = 'PORT';
+  static final String uri = 'URI';
+
+  @override
+  final Map<String, EnvSchema> schema = {
+    host: env.string().optional(),
+    port: env.number().integer(),
+    uri: env.string(),
+  };
+}
+```
+:::
