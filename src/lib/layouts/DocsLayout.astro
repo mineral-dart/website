@@ -48,37 +48,39 @@ const currentCollectionItems = collection
 								{
 									Object.entries(
 										config.docs as unknown as { [key: string]: ExplainerDocs },
-									).map(([key, element]) => (
-										<a
-											class="flex items-center gap-2 group text-primary font-medium"
-											href={element.href}
-										>
-											<div
-												class={clsx(
-													"rounded-sm p-1 inline-flex ring-inset ring-1",
-													Astro.url.pathname.startsWith(element.baseUrl)
-														? "bg-primary ring-primary text-white"
-														: "bg-gray-50 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700 text-muted-foreground",
-												)}
+									)
+										.filter(([key]) => key !== "_default")
+										.map(([key, element]) => (
+											<a
+												class="flex items-center gap-2 group text-primary font-medium"
+												href={element.href}
 											>
-												<Icon
-													client:only
-													icon={element.icon}
-													className="size-4"
-												/>
-											</div>
-											<span
-												class={clsx(
-													"text-sm relative",
-													Astro.url.pathname.startsWith(element.baseUrl)
-														? "text-primary"
-														: "text-muted-foreground",
-												)}
-											>
-												{element.label}
-											</span>
-										</a>
-									))
+												<div
+													class={clsx(
+														"rounded-sm p-1 inline-flex ring-inset ring-1",
+														Astro.url.pathname.startsWith(element.baseUrl)
+															? "bg-primary ring-primary text-white"
+															: "bg-gray-50 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700 text-muted-foreground",
+													)}
+												>
+													<Icon
+														client:only
+														icon={element.icon}
+														className="size-4"
+													/>
+												</div>
+												<span
+													class={clsx(
+														"text-sm relative",
+														Astro.url.pathname.startsWith(element.baseUrl)
+															? "text-primary"
+															: "text-muted-foreground",
+													)}
+												>
+													{element.label}
+												</span>
+											</a>
+										))
 								}
 							</div>
 						</nav>
@@ -159,37 +161,39 @@ const currentCollectionItems = collection
 												config.docs as unknown as {
 													[key: string]: ExplainerDocs;
 												},
-											).map(([key, element]) => (
-												<a
-													class="flex items-center gap-2 group text-primary font-medium"
-													href={element.href}
-												>
-													<div
-														class={clsx(
-															"rounded-sm p-1 inline-flex ring-inset ring-1",
-															Astro.url.pathname.startsWith(element.baseUrl)
-																? "bg-primary ring-primary text-white"
-																: "bg-gray-50 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700 text-muted-foreground",
-														)}
+											)
+												.filter(([key]) => key !== "_default")
+												.map(([key, element]) => (
+													<a
+														class="flex items-center gap-2 group text-primary font-medium"
+														href={element.href}
 													>
-														<Icon
-															client:only
-															icon={element.icon}
-															className="size-4"
-														/>
-													</div>
-													<span
-														class={clsx(
-															"text-sm relative",
-															Astro.url.pathname.startsWith(element.baseUrl)
-																? "text-primary"
-																: "text-muted-foreground",
-														)}
-													>
-														{element.label}
-													</span>
-												</a>
-											))
+														<div
+															class={clsx(
+																"rounded-sm p-1 inline-flex ring-inset ring-1",
+																Astro.url.pathname.startsWith(element.baseUrl)
+																	? "bg-primary ring-primary text-white"
+																	: "bg-gray-50 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700 text-muted-foreground",
+															)}
+														>
+															<Icon
+																client:only
+																icon={element.icon}
+																className="size-4"
+															/>
+														</div>
+														<span
+															class={clsx(
+																"text-sm relative",
+																Astro.url.pathname.startsWith(element.baseUrl)
+																	? "text-primary"
+																	: "text-muted-foreground",
+															)}
+														>
+															{element.label}
+														</span>
+													</a>
+												))
 										}
 									</div>
 								</nav>
