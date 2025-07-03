@@ -117,10 +117,11 @@ void main(_, port) async {
   final client = ClientBuilder()
     .setHmrDevPort(port)
     .build();
-
-  client.events.ready((Bot bot) { // [!code ++]
-    client.logger.info('${bot.username} is ready ! 🚀'); // [!code ++]
-  }); // [!code ++]
+  
+  // [!code ++:3]
+  client.events.ready((Bot bot) {
+    client.logger.info('${bot.username} is ready ! 🚀');
+  });
 
   await client.init();
 }
