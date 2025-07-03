@@ -1,5 +1,6 @@
 ---
 import Separator from "@/components/elements/separator";
+import type { ExplainerDocs } from "@/utils";
 import { Icon } from "@iconify/react";
 import type { CollectionKey, z } from "astro:content";
 import { getCollection } from "astro:content";
@@ -10,9 +11,11 @@ import "../../assets/css/global.css";
 import "../../assets/css/markdown.css";
 import BaseLayout from "./BaseLayout.astro";
 
-const currentCollection = Object.entries(config.docs).find(([key, element]) => {
-	return Astro.url.pathname.startsWith(element.baseUrl);
-});
+const currentCollection = Object.entries(config.docs)
+	.filter(([key]) => key !== "_default")
+	.find(([_, element]) =>
+		Astro.url.pathname.startsWith((element as ExplainerDocs).baseUrl),
+	);
 
 const currentCollectionKey = currentCollection![0] as CollectionKey;
 const collection = await getCollection(currentCollectionKey);

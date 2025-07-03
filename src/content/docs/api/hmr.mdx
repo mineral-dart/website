@@ -5,4 +5,70 @@ permalink: hmr
 icon: lucide:zap
 order: 11
 ---
-# Events
+# Hot Module Reloading
+
+Within the Mineral ecosystem, HMR (Hot Module Reloading) is a feature that automatically reloads your business code
+without having to restart your project or recreate a connection to Discord's Websocket API.
+
+> [!warning]
+> This feature is experimental and may not work as expected.
+
+---
+
+## Introduction
+
+This feature is particularly useful when you are developing your application and want to see the changes you make without having to restart your project.
+
+It is important to note that the HMR only reloads the contents of your project's `lib` folder and not the external dependencies.
+
+## How it works
+
+When you start the application from the `dart run` command, it will perform three distinct actions :
+1. Initialise the connection with Discord's Websocket
+2. Listen for incoming events
+3. Start the business part of your application
+
+It is important to note that the business part of your application is run within an `Isolate` child of the main application.
+
+This isolate is responsible for all the business actions in your application, such as managing commands, events and interactions.
+
+When you create, update or save a file in the `lib` folder, the application will automatically detect the changes using the `Watcher` component.
+
+In one of these three cases, this watcher will destroy this child `Isolate` and create a new one, which will have the effect of reloading your entire business application.
+
+> [!note]
+> The child Isolate does not create any new instances of the HMR and the Websocket client
+
+Communications from your application to Discord's Websocket API are passed from the business Isolate to the main Isolate, and then to the Websocket API.
+
+
+## Persistence through reloading
+
+At this stage, we have the expected behaviour of reloading the entire business application when a file is saved.
+
+The problem we now face is the loss of the application's state each time it is reloaded.
+This state is as much the responsibility of the memory, if the application uses it as a cache, as of the synchronisation of the local state (application) with the remote state (Discord) of our data.
+
+There are a multitude of solutions to this problem, but the simplest and most effective is to store the alteration to the state of our data in the application's main process.
+
+To do this, we need to intercept packets entering the application using Discord's Websocket, and then store them in memory.
+Each time the application is reloaded, this data can be re-injected into the business application in order to re-synchronise it by replaying past events.
+
+## Using the HMR
+
+In your `main.dart` file, add the retrieval of the Isolate port to the `main` function parameters, then transfer them to your `ClientBuilder` instance using the `setHmrDevPort` method.
+
+:::code-group labels=[main.dart]
+```dart
+Future<void> main() async { // [!code --]
+Future<void> main(_, port) async { // [!code ++]
+  final client = ClientBuilder()
+      .setCache((e) => MemoryProvider())
+      .setHmrDevPort(port) // [!code ++]
+      .build();
+  
+  await client.init();
+}
+```
+:::
+

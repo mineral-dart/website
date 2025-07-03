@@ -32,7 +32,7 @@ type ExplainerMeta = {
   thumbnail: string
 }
 
-type ExplainerDocs = {
+export type ExplainerDocs = {
   icon: string
   label: string
   href: string
