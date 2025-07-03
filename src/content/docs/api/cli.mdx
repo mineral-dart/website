@@ -6,3 +6,324 @@ icon: lucide:terminal
 order: 4
 ---
 # Command Line Interface
+
+The Command Line Interface (CLI) is a powerful tool that allows users to interact with their computer systems and
+software applications through text-based commands.
+
+---
+
+## Installation
+
+> [!note]
+> Before start, please make sure you have the Dart SDK installed on your machine.
+
+> [!note]
+> You can find the current version of the Mineral CLI [here](https://pub.dev/packages/mineral_cli).
+
+To install the Mineral CLI, run the following command:
+
+:::code-group auto
+```bash
+dart pub global activate mineral_cli [version]
+```
+:::
+
+Now you can use it like this:
+
+:::code-group auto
+```bash
+mineral help
+```
+:::
+
+```
+Welcome to Mineral CLI !
+Work seamlessly with Mineral from the command line.
+
+USAGE:
+  mineral <command> <subcommand> [flags]
+
+CORE COMMANDS
+  create           Create a new project
+  help             Display the help message
+
+MAKE COMMANDS
+  make:event       Create a new event class
+  make:command     Create a new command class
+```
+
+The CLI is used in two different ways depending on the location and context in which it is used.
+
+| Context | Description |
+|---------|-------------|
+| `Global` | This is the default context, and is used when the CLI is requested from anywhere in the system outside of a Mineral project. |
+| `Project` | Within a Mineral project, the CLI is called within the context of your application. create your own commands using your project's environment variables. |
+
+---
+
+## Core commands
+
+The basic commands are those available by default in the CLI.
+
+### Help
+
+The `help` command displays the list of commands available in the CLI.
+
+```
+Welcome to Mineral CLI !
+Work seamlessly with Mineral from the command line.
+
+USAGE:
+  mineral <command> <subcommand> [flags]
+
+CORE COMMANDS
+  create           Create a new project
+  help             Display the help message
+
+MAKE COMMANDS
+  make:event       Create a new event class
+  make:command     Create a new command class
+  make:provider    Create a new provider entrypoint
+  make:state       Create a new global state
+```
+
+It is important to note that when you create commands injected into the CLI, they will automatically appear in this help
+menu. automatically appear in this help menu.
+
+---
+
+### Create project
+
+The `create` command is used to create a new Mineral project.
+
+:::code-group auto
+```bash
+mineral create [project_name]
+```
+:::
+
+| Properties | Description |
+|------------|-------------|
+| `project_name` | The name of the project to create. |
+| `token` | When the command is run, you will be asked to enter your application's token in order to pre-populate your environment file. |
+| `hmr` | HMR (Hot Module Replacement) is a feature that automatically reloads your business code without having to restart having to restart your project. |
+| `preset` | You can then choose the skeleton of your project's software architecture in the form of an installation preset. |
+
+> [!note]
+> When the token is registered, it is processed securely and will never be shared outside your project.
+
+You can then choose the skeleton of your project's software architecture in the form of an installation preset.
+At present, 3 presets are available :
+- `Slim` : A minimalist project with a minimal basic structure.
+- `Basic` : A preset based on an architecture that groups components by type.
+- `Hexagonal` : A preset based on an architecture that groups components by domain.
+
+> [!important]
+> See the [dedicated section](/docs/guide/structure) for more information on the structure of a project.
+
+---
+
+### Make event
+
+The `make:event` command is used to create a new event.
+
+:::code-group auto
+```bash
+mineral make:event [filename]
+```
+:::
+
+> [!note]
+> If you do not provide the name of your file, you will be asked to define it later.
+
+The command will ask you to choose an event from among those available in the current version of the `core` used in your
+project.
+
+---
+
+### Make command
+
+The `make:command` command is used to create a new command.
+
+:::code-group auto
+```bash
+mineral make:command [filename]
+```
+:::
+
+> [!note]
+> If you do not provide the name of your file, you will be asked to define it later.
+
+The command will offer you a choice of two types of command :
+- Declaration
+- Definition
+
+For each of the cases presented, you will be asked to complete your order by means of a question and answer game.
+
+You can find more information about orders in the [dedicated section](/docs/fundamentals/commands).
+
+---
+
+### Make provider
+
+The `make:provider` command is used to create a new provider.
+
+:::code-group auto
+```bash
+mineral make:provider [name]
+```
+:::
+
+> [!note]
+> If you do not provide the name of your file, you will be asked to define it later.
+
+See the [dedicated section](/docs/fundamentals/providers) for more information on providers.
+
+---
+
+### Make state
+
+The `make:state` command is used to create a new state.
+
+:::code-group auto
+```bash
+mineral make:state [name]
+```
+:::
+
+> [!note]
+> If you do not provide the name of your file, you will be asked to define it later.
+
+See the [dedicated section](/docs/fundamentals/global-states) for more information on shared states.
+
+## Make your own commands
+
+You can also create your own commands to simplify or automate certain processes.
+
+The procedure explained below is valid when you want to create commands for your project but also as part of packages
+registered on the `dart pub` registry.
+
+> [!note]
+> Some packages may have their own commands.
+> Simply installing the package will automatically inject the commands into the CLI __without any additional action__.
+
+To collect choices from the user of your order, we recommend that you use
+the [`commander_ui`](https://github.com/LeadcodeDev/commander) library, which will enable you to create interactive
+interfaces within CLi and the [`mansion`](https://pub.dev/packages/mansion) package to make colored output.
+
+---
+
+### Structure
+
+We recommend that you structure your commands according to the structure recommended in the official documentation.
+
+We will use a `bin` folder for this purpose, but you are free to choose the location.
+
+```
+├── bin
+│  └── main.dart
+│
+// [!code ++:3]
+├── cli
+│  ├── my_command.dart
+│  └── my_command2.dart
+│
+├── pubspec.yaml
+└── .env
+```
+
+---
+
+### Declaration
+
+Declaring a command is an important step, as it indicates its existence within the CLI.
+
+Following the example of Flutter, add a new `mineral` key to the `pubspec.yaml` file in your project.
+which will contain a list of commands.
+
+:::code-group labels=[pubspec.yaml]
+```yaml
+name: my_application
+description: A simple mineral application
+
+# [!code ++:5]
+mineral:
+  commands:
+    - name: my_command
+      description: My first command
+      entrypoint: cli/my_command.dart
+
+environment:
+dependencies:
+dev_dependencies:
+```
+:::
+
+The use of a `yaml` file is mandatory because the CLI invokes the targeted command through the spawn of a new `Process`.
+
+---
+
+### Entrypoint
+
+The input file for your command is the file that will be invoked by the CLI.
+It is defined when mapping your commands in the `pubspec.yaml` file.
+
+:::code-group labels=[pubspec.yaml]
+```yaml
+mineral:
+  commands:
+    - name: my_command
+      description: My first command
+      # [!code highlight]
+      entrypoint: cli/my_command.dart
+```
+:::
+
+The sine qua non condition for this invocation to work properly is the presence of a hand' function in the file containing your command.
+
+We can think of each command as a program in its own right which can itself instantiate various services used within
+your Mineral application in the same way as when you start it.
+
+> [!note]
+> A command has no `Mineral` reference instance, so if you want to use components from the framework, you'll have to instantiate them yourself.
+
+For example, you can use Mineral's environment service to retrieve environment variables environment variables within
+your main application.
+
+:::code-group labels=[cli/my_command.dart, .env]
+```dart
+import 'package:mineral/api.dart';
+import 'package:mineral/services.dart';
+
+void main() {
+  final token = env.get(AppEnv.token);
+  print('Your token is $token');
+}
+```
+```dotenv
+DART_ENV=development
+TOKEN=your_token
+DISCORD_REST_API_VERSION=10
+DISCORD_WS_VERSION=10
+INTENT=3276799
+LOG_LEVEL=TRACE
+```
+:::
+
+---
+
+### Help displaying
+
+> [!note]
+> You can sort your orders by name.
+
+If your command is called `migration:run` or `migration:rollback`, it will be filed in the dedicated migration section.
+
+```
+...
+MIGRATION COMMANDS
+  migration:run          Run SQL database migrations
+  migration:rollback     Rollback SQL database migrations
+...
+```
+
