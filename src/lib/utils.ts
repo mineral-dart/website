@@ -17,6 +17,7 @@ type NavbarCollection = {
   label: string
   items?: NavbarItem[]
   href?: string
+  target?: string
 }
 
 type NavbarItem = {

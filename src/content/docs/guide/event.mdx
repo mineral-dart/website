@@ -9,8 +9,63 @@ order: 4
 
 The Discord API uses a real-time event system transmitted via a WebSocket connection to allow client applications to receive instant updates from the server.
 
-When a bot or application connects to the Discord gateway, it receives a continuous stream of events, such as new messages, user status changes, channel changes, and much more.
+> [!important]
+> Please see the dedicated [section](/docs/api/events) for more information.
 
 ---
 
 ## Introduction
+
+When a bot or application connects to the Discord gateway, it receives a continuous stream of events, such as new messages, user status changes, channel changes, and much more.
+
+An event listener is a function that listens to a specific event and triggers an action when the event is dispatched.
+
+Basically, Mineral offers an event system that can be used in two different ways.
+
+---
+
+## Functional approach
+
+Let's take a simple example of a bot that listens to the `MessageCreate` event and prints the message content to the console.
+
+From the `Client`, we can chain event listeners using the following pattern :
+
+:::code-group labels=[Pattern, MessageCreate]
+```dart
+client.events.<context>.<event>(<listener>)
+```
+```dart
+client.events.server.messageCreate((message) {
+  print(message.content);
+});
+```
+:::
+
+---
+
+## Object-oriented approach
+
+For benchmarking purposes, we recommend using the `functional` approach, but when developing applications requiring 
+more than 2 events or commands, we recommend using the object-oriented approach.
+
+:::code-group labels=[Pattern, MessageCreate, Register]
+```dart
+final class <ClassName> extends <Event> {
+  @override
+  FutureOr<void> handle(<params>) {
+    // Your business code here
+  }
+}
+```
+```dart
+final class MessageCreate extends MessageCreateEvent {
+  @override
+  void handle(ServerMessage message) {
+    print(message.content);
+  }
+}
+```
+```dart
+client.register(MessageCreate.new);
+```
+:::

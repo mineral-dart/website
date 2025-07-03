@@ -81,7 +81,8 @@ export default defineExplainerConfig({
     },
     {
       label: 'API',
-      href: '/api',
+      href: 'https://pub.dev/packages/mineral/versions/4.0.0-dev.11',
+      target: '_blank',
     },
     {
       label: 'Blog',
