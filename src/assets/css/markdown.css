@@ -325,6 +325,7 @@ html.dark .prose>.astro-code {
   border-radius: 0.25rem;
   padding: 0.2rem 0.3rem;
   background: color-mix(in srgb, var(--background) 30%, transparent);
+  font-weight: 500;
 
   &::before,
   &::after {

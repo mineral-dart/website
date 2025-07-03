@@ -1,0 +1,130 @@
+---
+title: Service container
+description: Service container is a container that holds the services for the application.
+permalink: container
+icon: lucide:box
+order: 10
+---
+# Service container
+
+IoC is a concept that allows services to be defined in a container and then used in the rest of the application via a
+single instance.
+application using a single instance.
+
+It improves the modularity and reusability of the code, as well as its testability.
+
+---
+
+## Introduction
+
+Inversion of Control (`IoC`) is a design principle used in software development to increase the modularity and flexibility
+of code. It involves delegating the control of certain aspects of a program, such as the creation and management of
+objects, to a container or framework.
+
+This approach allows developers to focus on the business logic of their application while the IoC container handles the
+instantiation and lifecycle of dependencies.
+
+### Benefits
+
+- **Decoupling :** IoC reduces the tight coupling between components, making the system more adaptable to changes. Ease of Maintenance: With a clear separation of concerns, maintaining and updating the code becomes more straightforward.
+- **Testability :** Dependencies can be injected, making it easier to write unit tests and achieve higher test coverage.
+- **Flexibility :** It provides the flexibility to change implementations without modifying the dependent code, facilitating easier updates and maintenance.
+
+## How it works
+
+In your applications, it is common to want to share services between several components such as
+repositories, services, configurations, etc.
+
+IoC simplifies the task by allowing you to define these services in a central container and use them in the rest of the application via a single instance.
+the rest of the application via a single instance.
+
+> [!note]
+> Follow [this link](https://refactoring.guru/design-patterns/singleton) to learn more about `Singleton` pattern.
+
+## Basic usage
+
+Within the Mineral framework, we have decided not to use code generation (judging a lack of
+control), which means writing additional code in order to make full use of IoC.
+
+Basically, an IoC involving service injection consists of two stages.
+
+1. Creation of a service in the form of a class
+2. Call of the service by a consumer. If the service exists, it is injected, otherwise it is instantiated and then injected.
+
+## Mineral usage
+
+In the Dart language, it is impossible to locate the services called without using reflection,
+but using it means that you can no longer compile the application to `jit`, `aot`, `exe`... because this reflection only
+only works within the Dart VM.
+
+As it is, we have to inject our services ourselves.
+
+> [!note]
+> With the announcement and development of `macros` in Dart, it is possible that we will be able to automate this task of
+> instantiation task.
+
+### Create a service
+
+:::code-group labels=[service.dart]
+```dart
+final class MyClass {
+  void sayHello() => print('Hello World');
+}
+```
+:::
+
+### Register and resolve the service
+
+There are two ways of registering our service with the IoC :
+
+1. bind: registers a service without returning it.
+2. make: registers a service and returns it.
+
+> [!warning]
+> It is not possible to retrieve a service not previously instantiated in the IoC.
+
+:::code-group labels=[binding, making]
+```dart
+void main() {
+  ioc.bind(MyClass.new);
+
+  final service = ioc.resolve<MyClass>();
+  service.sayHello();
+}
+```
+
+```dart
+void main() {
+  final service = ioc.make(MyClass.new);
+  service.sayHello();
+}
+```
+:::
+
+In order to abstract a service, it is also possible to give an `interface` instead of a direct implementation.
+
+:::code-group labels=[main.dart,service.dart, contract]
+```dart
+void main() {
+   // [!code --:2]
+  ioc.bind(MyClass.new);
+  final service = ioc.resolve<MyClass>();
+
+ // [!code ++:2]
+  ioc.bind<MyClassContract>(MyClass.new);
+  final service = ioc.resolve<MyClassContract>();
+
+  service.sayHello();
+}
+```
+```dart
+final class MyClass implements MyClassContract {
+  void sayHello() => print('Hello World');
+}
+```
+```dart
+abstract interface class MyClassContract {
+  void sayHello();
+}
+```
+:::

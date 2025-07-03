@@ -37,7 +37,6 @@ type ExplainerDocs = {
   label: string
   href: string
   baseUrl: string
-  baseRepositoryUrl: string
 }
 
 type ExplainerBlog = {
@@ -73,7 +72,16 @@ type ExplainerSocial = {
 
 type ExplainerConfig = {
   meta: ExplainerMeta
-  docs: { [key in CollectionKey]?: ExplainerDocs }
+  docs: {
+    _default: {
+      source: {
+        docs: string
+        issues: string
+      }
+    },
+  } & {
+    [key in CollectionKey]?: ExplainerDocs
+  }
   urls: {
     github?: string
     getStarted?: string
