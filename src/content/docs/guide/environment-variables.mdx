@@ -58,3 +58,55 @@ enum DartEnv implements Enumerable<String> {
 }
 ```
 :::
+
+### token
+The `TOKEN` variable is a secret key that is used to authenticate the application with the Discord API. 
+
+`TOKEN` is used for Discord Websocket and API authentications, [read more](https://discord.com/developers/docs/topics/gateway-events#identify).
+
+> [!warning]
+> `TOKEN` is private and should not be shared with anyone.
+
+---
+
+### http_version
+The `DISCORD_REST_API_VERSION` variable is the version of the HTTP protocol that the application will use to communicate with the Discord API.
+
+`DISCORD_REST_API_VERSION` defines the version of the HTTP protocol that the application will use to communicate with the Discord API, [read more](https://discord.com/developers/docs/reference#api-versioning).
+
+---
+
+### wss_version
+The `DISCORD_WS_VERSION` variable is the version of the Websocket protocol that the application will use to communicate with the Discord API.
+
+`DISCORD_WS_VERSION` defines the version of the Websocket protocol that the application will use to communicate with the Discord API, [read more](https://discord.com/developers/docs/topics/gateway#gateways-gateway-versions).
+
+---
+
+### intent
+The `INTENT` variable is the intent that the application will use to receive events from the Discord API.
+
+`INTENT` defines the intent that the application will use to receive events from the Discord API, [read more](https://discord.com/developers/docs/topics/gateway#gateway-intents).
+
+---
+
+### log_level
+The `LOG_LEVEL` variable is the level of logging that the application will use to log messages.
+
+```dart
+const logLevels = {
+  'TRACE': logging.Level.FINEST,
+  'FATAL': logging.Level.SHOUT,
+  'ERROR': logging.Level.SEVERE,
+  'WARN': logging.Level.WARNING,
+  'INFO': logging.Level.INFO,
+};
+```
+
+> [!note]
+> The `trace` level is the lowest level, used in particular for debugging or log reporting by a third party such as [`loki`](https://grafana.com/docs/loki/latest/).
+
+---
+
+### dart_env
+The `DART_ENV` variable is a string that determines whether the application will use partial reload.
