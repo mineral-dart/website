@@ -67,6 +67,33 @@ module.exports = {
 ```
 :::
 
+### Start PM2 and manage processes
+
+Once your ecosystem configuration is set up, you can start and manage your application with PM2 :
+
+:::code-group labels=[start, list, logs, restart, stop]
+```bash
+# Start the application
+pm2 start ecosystem.config.js
+```
+```bash
+# List all running processes
+pm2 list
+```
+```bash
+# View logs
+pm2 logs discord-bot
+```
+```bash
+# Restart the application
+pm2 restart discord-bot
+```
+```bash
+# Stop the application
+pm2 stop discord-bot
+```
+:::
+
 ---
 
 ## Docker
