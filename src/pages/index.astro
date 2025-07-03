@@ -166,6 +166,44 @@ const bentogrid: BentoGridProps = {
 	<div>
 		<div class="relative flex items-center justify-center min-h-[60vh]">
 			<BackgroundAnimation client:only />
+			<img
+				class="animate-up-down-fast parallax hidden md:block absolute top-4/5 right-0 md:left-32 z-0 w-32 md:w-48"
+				crossorigin="anonymous"
+				referrerpolicy="no-referrer"
+				sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+				loading="eager"
+				width={1024}
+				height={576}
+				data-speed="120"
+				src="/cristals/cristal_1.png"
+				alt="Cristal"
+			/>
+
+			<img
+				class="animate-up-down-medium parallax hidden md:block absolute top-64 right-10 z-0 w-36"
+				crossorigin="anonymous"
+				referrerpolicy="no-referrer"
+				sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+				loading="eager"
+				width={1024}
+				height={576}
+				data-speed="30"
+				src="/cristals/cristal_2.png"
+				alt="Cristal"
+			/>
+
+			<img
+				class="animate-up-down-slow parallax hidden md:block absolute top-20 left-20 z-0 w-24"
+				crossorigin="anonymous"
+				referrerpolicy="no-referrer"
+				sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+				loading="eager"
+				width={1024}
+				height={576}
+				data-speed="0"
+				src="/cristals/cristal_3.png"
+				alt="Cristal"
+			/>
 			<div
 				class="px-5 sm:px-0 relative z-10 flex flex-col items-center justify-center gap-5 text-center"
 			>
@@ -254,3 +292,14 @@ const bentogrid: BentoGridProps = {
 		}
 	</div>
 </Layout>
+
+<script>
+	document.addEventListener("scroll", function () {
+		const parallaxElements = document.querySelectorAll(".parallax");
+		parallaxElements.forEach((element) => {
+			const speed = element.getAttribute("data-speed");
+			const yPos = -((window.scrollY * speed) / 100);
+			element.style.transform = `translateY(${yPos}px)`;
+		});
+	});
+</script>

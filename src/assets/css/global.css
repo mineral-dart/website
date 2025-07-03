@@ -163,3 +163,51 @@
 ::view-transition-new(root) {
   animation-duration: 0.3s !important;
 }
+
+@keyframes upDownSlow {
+
+  0%,
+  100% {
+    margin-top: 0;
+  }
+
+  50% {
+    margin-top: -30px;
+  }
+}
+
+@keyframes upDownMedium {
+
+  0%,
+  100% {
+    margin-top: 0;
+  }
+
+  50% {
+    margin-top: -50px;
+  }
+}
+
+@keyframes upDownFast {
+
+  0%,
+  100% {
+    margin-top: 0;
+  }
+
+  50% {
+    margin-top: -80px;
+  }
+}
+
+.animate-up-down-slow {
+  animation: upDownSlow 7s ease-in-out infinite;
+}
+
+.animate-up-down-medium {
+  animation: upDownMedium 5s ease-in-out infinite;
+}
+
+.animate-up-down-fast {
+  animation: upDownFast 4s ease-in-out infinite;
+}
