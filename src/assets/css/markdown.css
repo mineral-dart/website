@@ -260,14 +260,10 @@ h6 {
   }
 }
 
-.prose ul {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
-
 .prose ul li {
   padding: 0.25em 0;
   padding-left: 1.5em;
+  margin-left: 1em;
 }
 
 html:not(.dark) .prose .astro-code,
@@ -328,7 +324,7 @@ html.dark .prose>.astro-code {
 .prose li code {
   border: 1px solid var(--color-border-tab);
   border-radius: 0.25rem;
-  padding: 0.3rem 0.3rem;
+  padding: 0.2rem 0.3rem;
   background: color-mix(in srgb, var(--background) 30%, transparent);
 
   &::before,
