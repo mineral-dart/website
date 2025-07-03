@@ -425,11 +425,16 @@ html.dark .prose>.astro-code {
   }
 }
 
-.code-group .astro-code {
-  margin: 0 !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  border: none !important;
+.code-group {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+
+  .astro-code {
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border: none !important;
+  }
 }
 
 .callout {
@@ -447,6 +452,7 @@ html.dark .prose>.astro-code {
     gap: 0.5rem;
     opacity: 0.8;
     font-size: var(--text-sm);
+    line-height: 1.8;
 
     >*:first-child {
       margin-top: 0;
@@ -463,6 +469,10 @@ html.dark .prose>.astro-code {
     color: var(--callout-note);
 
     .callout-content {
+      a {
+        color: var(--callout-note);
+      }
+
       &::before {
         content: "ⓘ";
         font-size: 1.2rem;
@@ -477,6 +487,10 @@ html.dark .prose>.astro-code {
     color: var(--callout-success);
 
     .callout-content {
+      a {
+        color: var(--callout-success);
+      }
+
       &::before {
         content: "✓";
         font-size: 1.2rem;
@@ -491,6 +505,10 @@ html.dark .prose>.astro-code {
     color: var(--callout-important);
 
     .callout-content {
+      a {
+        color: var(--callout-important);
+      }
+
       &::before {
         content: "✧";
         font-size: 1.5rem;
@@ -505,6 +523,10 @@ html.dark .prose>.astro-code {
     color: var(--callout-warning);
 
     .callout-content {
+      a {
+        color: var(--callout-warning);
+      }
+
       &::before {
         content: "⚠︎";
         font-size: 1.4rem;
@@ -519,6 +541,10 @@ html.dark .prose>.astro-code {
     color: var(--callout-error);
 
     .callout-content {
+      a {
+        color: var(--callout-error);
+      }
+
       &::before {
         content: "✗";
         font-size: 1.2em;

@@ -53,6 +53,7 @@ export function CodeGroup(props: CodeGroupProps) {
 }
 
 const icons = {
+  '.env': 'catppuccin:env',
   markdown: 'devicon:markdown',
   mdx: 'devicon:markdown',
   html: 'devicon:html5',
