@@ -12,33 +12,35 @@ export default defineExplainerConfig({
     documentation: '/docs/framework/installation'
   },
   docs: {
+    _default: {
+      source: {
+        docs: 'https://github.com/mineral-dart/website/blob/main',
+        issues: 'https://github.com/mineral-dart/core'
+      }
+    },
     guide: {
       icon: 'lucide:book-open',
       label: 'Guide',
       href: '/docs/guide/installation',
       baseUrl: '/docs/guide',
-      baseRepositoryUrl: 'https://github.com/mineral-dart/website/blob/main',
     },
     api: {
       icon: 'lucide:code-xml',
       label: 'API',
       href: '/docs/api/events',
       baseUrl: '/docs/api',
-      baseRepositoryUrl: 'https://github.com/mineral-dart/website/blob/main',
     },
     concepts: {
       icon: 'lucide:book-dashed',
       label: 'Concepts',
-      href: '/docs/concepts/container',
+      href: '/docs/concepts/immutability',
       baseUrl: '/docs/concepts',
-      baseRepositoryUrl: 'https://github.com/mineral-dart/website/blob/main',
     },
     examples: {
       icon: 'lucide:app-window-mac',
       label: 'Examples',
       href: '/docs/examples/ping-pong',
       baseUrl: '/docs/examples',
-      baseRepositoryUrl: 'https://github.com/mineral-dart/website/blob/main',
     },
   },
   blog: {
@@ -70,7 +72,7 @@ export default defineExplainerConfig({
         {
           label: 'Concepts',
           description: 'Learn the concepts of the framework.',
-          href: '/docs/concepts/container',
+          href: '/docs/concepts/immutability',
         },
         {
           label: 'Examples',
