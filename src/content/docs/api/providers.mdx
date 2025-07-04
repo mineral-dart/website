@@ -6,3 +6,106 @@ icon: lucide:picture-in-picture
 order: 3
 ---
 # Providers
+
+In a more modular approach, we often want to declare our events, commands, etc. on a different entry point from the main file.
+
+To this end, the provider principle allows you to compartmentalise your application code into a single entry point, which can then be imported into your `main.dart`.
+
+---
+
+## Introduction
+
+A modular architecture is often desired to declare our events, commands, etc. on a different entry point from the main file.
+A representative and recurring structure for a more business-oriented architecture might be as follows :
+
+```
+├── bin
+│  └── main.dart
+├── lib
+│  ├── application
+│  │  └── tickets
+│  │     ├── commands
+│  │     ├── events
+│  │     └── ticket_provider.dart
+│  ├── domain
+│  └── infrastructure
+```
+
+---
+
+## Usage
+
+Providers are very easy to use, allowing you to declare your events, commands and much more in the constructor 
+of a simple class.
+
+### Create an provider
+First, we will execute a command from the CLI of the Mineral framework.
+
+```bash
+mineral make:provider <name>
+```
+
+### Declaring a provider
+A provider is a class that allows you to declare your events, commands, etc. in a modular way.
+
+:::code-group labels=[ticket_provider.dart]
+```dart
+final class TicketProvider extends Provider {
+  final Client _client;
+
+  TicketProvider(this._client) {
+    // [!code ++:2]
+    _client.register(TicketCommands.new);
+    _client.register(TicketEvent.new);
+  }
+}
+```
+:::
+
+In this case, we want to record all our events and commands relating to our `ticket` module in a `ticket_provider.dart`
+provider which will then be imported into your application's `main.dart`.
+
+:::code-group labels=[main.dart]
+```dart
+void main(_, port) async {
+  final client = ClientBuilder()
+      .setHmrDevPort(port)
+      .registerProvider(TicketProvider.new) // [!code ++]
+      .build();
+  
+  await client.init();
+}
+```
+:::
+
+---
+
+## Event lifecycle
+
+When your application loads your providers, they will automatically record your events and commands declared as constructors in the client.
+
+However, it is possible to declare actions at certain points in your application's lifecycle.
+
+The interaction points are as follows:
+- `ready`: When your bot has started up
+- `dispose`: When your application is in the process of stopping.
+
+```dart
+final class TicketProvider extends Provider {
+  final Client _client;
+
+  TicketProvider(this._client) {
+    _client.register(TicketCommands.new);
+    _client.register(TicketEvent.new);
+  }
+  
+  // [!code ++:2]
+  @override
+  FutureOr<void> ready() {}
+  
+  // [!code ++:2]
+  @override
+  FutureOr<void> dispose() {}
+}
+```
+
