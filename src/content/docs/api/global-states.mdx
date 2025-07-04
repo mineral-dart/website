@@ -5,4 +5,160 @@ permalink: global-states
 icon: lucide:brain
 order: 6
 ---
-# Events
+# Global States
+
+It is sometimes difficult to share data through your applications, the Mineral framework offers an essential component
+to overcome this problem.
+
+---
+
+## Introduction
+
+Under the Node runtime with the Javascript language, you are advised when you start developing discord applications to
+develop your entire application within a single file, your index.js.
+
+:::code-group labels=[index.js]
+```js
+import { Client, GatewayIntentBits } from 'discord.js'
+
+const foo = 'bar'
+const client = Client({ intents: [GatewayIntentBits.Guilds] })
+
+client.once('ready', () => {
+  console.log(`${foo} is ready !`)
+});
+
+client.on('messageCreate', () => {
+  console.log(`${foo} is ready !`)
+});
+
+client.login('...')
+```
+:::
+
+So each of your listeners can access every variable defined within it, but this practice is bad because your application
+will lose a lot of scalability and maintainability. This benefit is lost when we decide to decompose our application
+following a business logic.
+
+In order to overcome this lack of accessibility, the Mineral framework allows you to design shared data throughout your
+application through a very important notion: shared states.
+
+These shared states are represented as classes instantiated within your main.dart file or modules and will be directly
+injected within the instance of your events, commands or context menus.
+
+---
+
+## Create global state
+
+First, we will execute a command from the CLI of the Mineral framework.
+
+:::code-group auto
+```bash
+mineral make:state <name>
+```
+:::
+
+This command will create a new file in the target directory of your project. This file will contain a class that will
+be used to store your shared data.
+
+:::code-group labels=[counter_state.dart, contract]
+```dart
+final class CounterState implements GlobalState<int> {
+  @override
+  int state = 0;
+
+  @override
+  void increment() => state++;
+
+  @override
+  void decrement() => state--;
+}
+```
+```dart
+abstract interface class GlobalState<T> implements Listenable {
+  T get state;
+}
+```
+:::
+
+> [!note]
+> Notre `T state` est vu comme étant un `getter` et non une propriété, cela permet d'empêcher de redéfinir la valeur de la variable depuis l'extérieur de la classe.
+
+Once your blind is created, we will add it to the `main.dart` file or to your module.
+
+:::code-group labels=[main.dart]
+```dart
+void main(_, port) async {
+  final client = Client()
+    .setHmrDevPort(port)
+    .build();
+
+  client.register(CounterState.new);
+}
+```
+:::
+
+## Usage with abstract contract
+
+:::code-group labels=[counter_state.dart, contract]
+
+```dart
+final class CounterState implements GlobalState<int> { // [!code --]
+final class CounterState implements CounterStateContract { // [!code ++]
+  @override
+  int state = 0;
+
+  @override
+  void increment() => state++;
+
+  @override
+  void decrement() => state--;
+}
+```
+```dart
+abstract interface class CounterStateContract implements GlobalState<int> {
+  void increment();
+  void decrement();
+}
+```
+:::
+
+Once your contract is implemented, we can override the state binding with generic.
+
+:::code-group labels=[main.dart]
+```dart
+void main(_, port) async {
+  final client = Client()
+    .setHmrDevPort(port)
+    .build();
+
+  client.register(CounterState.new); // [!code --]
+  client.register<CounterStateContract>(CounterState.new); // [!code ++]
+}
+```
+:::
+
+---
+
+## Retrieve global state
+
+In the followed section, we consider that the state is a counter with `CounterStateContract` named binding.
+
+To retrieve a global state, we provide an `State` mixin that allows you to inject states into your class for easy
+access.
+
+:::code-group labels=[my_event.dart]
+```dart
+final class MyEvent extends MessageCreateEvent { // [!code --]
+final class MyEvent extends MessageCreateEvent with State { // [!code ++]
+  @override
+  Future<void> handle(ServerMessage message) async {
+    // [!code ++:2]
+    final counter = state.read<CounterStateContract>();
+    counter.increment();
+
+    print('Counter value: ${counter.state}'); // [!code ++]
+  }
+}
+```
+:::
