@@ -5,4 +5,1078 @@ permalink: commands
 icon: lucide:square-slash
 order: 3
 ---
+
 # Commands
+
+Slash commands were implemented with the aim of replacing messages considered as commands with a start-of-line
+character, often defined as a message prefix like `!`.
+
+## Introduction
+
+Slash commands allow users to interact with bots in a more intuitive and structured way, using predefined syntax.
+
+They make it easier to execute specific commands without having to remember prefixes or complex message formats.
+
+They were created to replace message-based commands with prefixes, making the user experience smoother and reducing
+syntax errors.
+
+> [!note]
+> When you change the structure of your commands, please restart your entire application process so that the changes take
+> effect even if the `hmr` is active.
+
+## Valid structure
+
+In accordance with the Discord API, it is possible to define commands in several formats
+explained [here](https://discord.com/developers/docs/interactions/application-commands#subcommands-and-subcommand-groups).
+
+### Basic command
+
+```
+├── command
+```
+
+### Subcommands
+
+As soon as you define a subcommand, the level 0 command can no longer have any behaviour (handler, options)
+
+```
+├── command
+│  └── subcommand
+│  └── subcommand
+```
+
+### Subcommands under many groups
+
+```
+├── command
+│  ├── groups
+│  │  └── subcommand
+│  │  └── subcommand
+│  └── groups
+│     └── subcommand
+│     └── subcommand
+```
+
+### Subcommands and groups
+
+```
+├── command
+│  ├── groups
+│  │  └── subcommand
+│  ├── groups
+│  │  └── subcommand
+│  │  └── subcommand
+│  └── subcommand
+```
+
+## Basic command
+
+To simplify the creation and configuration of commands, we have decided to provide a builder that allows us to reduce
+errors linked to the data structure requested by Discord's HTTP API.
+
+> [!important]
+> The `name` and `description` properties are mandatory for each command, group or subcommand.
+
+In the case of a command or subcommand, it is necessary to define a handler that will be used later to respond to the interaction.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo')
+  .setDescription('This is a command description')
+  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+```
+
+### Context
+
+If we follow Discord's data structure, we can see that each interaction has a context which
+can be `server` or `global`.
+
+When we develop a command, we prefer to use the context of the guild in which the interaction has been
+executed, as this does not have a cache, unlike a `global` command.
+
+So, by default, each command uses the guild's context and is pushed to Discord when the
+`ServerCreate` event.
+
+You can change the context of your command using the builder's `setContext` method.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setContext(CommandContextType.server)
+  .setContext(CommandContextType.global);
+```
+
+Depending on your choice, you will need to adapt your handler to find out the context in which it is being executed.
+
+:::code-group labels=[Without context, Server, Global]
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setHandler((CommandContext ctx) {});
+```
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setContext(CommandContextType.server)
+  .setHandler((ServerCommandContext ctx) {});
+```
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setContext(CommandContextType.global)
+  .setHandler((GlobalCommandContext ctx) {});
+```
+
+:::
+
+### Assign options
+
+Commands can have options that allow you to define arguments for the command.
+
+> [!note]
+> The order in which the options are declared is important because it will affect how your users use the command users.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .addOption(
+    Option.string(
+      name: 'str',
+      description: 'Your sentence',
+      required: true
+    )
+  );
+```
+
+Now that the options have been defined for your order, you need to modify your handler to take them into account
+in its parameters.
+
+Each option defined must be added to named parameters (the order of declaration is not important)
+
+> [!note]
+> The name of your parameter declared in your handler must be the same as that defined in the `name` key of your option.
+
+```dart
+void handle(ctx, {required String str}) { // [!code highlight]
+  print(str);
+}
+
+final commandBuilder = CommandBuilder()
+  .setHandler(handle)
+  .addOption(
+    Option.string(
+      name: 'str', // [!code highlight]
+      description: 'Your sentence',
+      required: true
+    )
+  );
+```
+
+If your parameter is optional, remember to indicate this in the declaration of your handler using the language's
+`null safety` feature.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setHandler((ctx, {required String? str}) {});
+```
+
+### Options types
+
+Basic types are available to define options for your commands.
+
+:::code-group labels=[String, Integer, Double, Boolean]
+
+```dart
+Option.string(
+  name: 'str',
+  description: 'Your sentence',
+  required: true
+);
+```
+
+```dart
+Option.integer(
+  name: 'int',
+  description: 'Your number',
+  required: true
+);
+```
+
+```dart
+Option.double(
+  name: 'int',
+  description: 'Your number',
+  required: true
+);
+```
+
+```dart
+Option.boolean(
+  name: 'bool',
+  description: 'Your boolean',
+  required: true
+);
+```
+
+:::
+
+Mentionable types are available to define options for your commands.
+
+:::code-group labels=[User, Channel, Role, Mentionable]
+
+```dart
+Option.user(
+  name: 'user',
+  description: 'Your user',
+  required :true
+);
+```
+
+```dart
+Option.channel(
+  name: 'channel',
+  description: 'Your channel',
+  required :true
+);
+```
+
+```dart
+Option.role(
+  name: 'role',
+  description: 'Your role',
+  required: true
+);
+```
+
+```dart
+Option.mentionable(
+  name: 'mentionable',
+  description: 'Your mentionable',
+  required: true
+);
+```
+
+:::
+
+### Defining subcommand
+
+Subcommands are commands nested within a top-level command.
+
+We'll use the same builder to define our level 0 command, to which we'll add subcommands
+using the `.addSubCommand` method.
+
+> [!note]
+> When you declare subcommands, you can no longer define a handler for the top-level command.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo')
+  .setDescription('This is a command description')
+  .setHandler((ctx) => ctx.interaction.reply('Hello, world!')); // [!code --]
+  // [!code ++:6]
+  .addSubCommand((command) {
+    command
+      .setName('bar')
+      .setDescription('This is a subcommand description')
+      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  });
+```
+
+As with a basic command, you can define options for your subcommands in the same way as explained above.
+
+### Command group
+
+Groups are used to group several subcommands together by function.
+When you define a group, you must add one or more subcommands to it.
+
+> [!note]
+> When you define a group, you can no longer define a handler for the top-level command.
+
+> [!note]
+> A group cannot have a handler, so a handler must be defined for each subcommand.
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo')
+  .setDescription('This is a command description')
+  .setHandler((ctx) => ctx.interaction.reply('Hello, world!')); // [!code --]
+  // [!code ++:11]
+  .createGroup((group) {
+    group
+      .setName('group')
+      .setDescription('This is a group description')
+      .addSubCommand((command) {
+        command
+          .setName('bar')
+          .setDescription('This is a subcommand description')
+          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+      });
+  });
+```
+
+### Registering commands
+
+Once you have defined your order, you need to declare it in your client for it to be taken into account at Discord.
+
+:::code-group labels=[main.dart]
+
+```dart
+final client = ClientBuilder()
+  .setCache((e) => MemoryProvider())
+  .build();
+
+// [!code highlight:6]
+client.commands.declare((command) {
+  command
+    ..setName('foo')
+    ..setDescription('This is a command description')
+    ..setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+});
+
+await client.init();
+```
+
+:::
+
+## Translations
+
+Translations were introduced to allow developers to define text content in several languages.
+In the case of our commands, they allow messages and arguments to be displayed in the user's language.
+
+> [!important]
+> Translations can only be used for `name` and `description` fields.
+
+We can apply a translation in two different ways:
+
+- From a `Map<String, String>`.
+- From a `yaml` or `json` file
+
+The main advantage of using a `Map<String, String>` is the simplicity of defining translations
+directly in the code.
+
+However, when your application has to manage a multitude of languages, it becomes difficult to define everything in a single
+in a single file without losing readability.
+
+This is where the 'configuration file' approach comes into play, enabling you to define translations
+in an external file, thereby separating the 'logic' aspect from the 'configuration' aspect.
+
+### Basic command with translations
+
+:::code-group labels=[From Map, From File, Configuration (yaml)]
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: Translation({
+    'fr': 'foo',
+    'en': 'foo'
+  }))
+  .setDescription('This is a test command', translation: Translation({
+    'fr': 'Ceci est une commande de test',
+    'en': 'This is a test command'
+  }))
+  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+```
+
+```dart
+final file = File('src/commands.yaml');
+final translation = Translation.file(file: file, key: 'test');
+
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: translation)
+  .setDescription('This is a test command', translation: translation)
+  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+```
+
+```yaml
+commands:
+  test:
+    name:
+      fr: bonjour
+      en-GB: hello
+    description:
+      fr: bonjour le monde description
+      en-GB: hello world description
+```
+
+:::
+
+### Command with subcommands and translations
+
+:::code-group labels=[From Map, From File, Configuration (yaml)]
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: Translation({
+    'fr': 'foo',
+    'en': 'foo'
+  }))
+  .setDescription('This is a test command', translation: Translation({
+    'fr': 'Ceci est une commande de test',
+    'en': 'This is a test command'
+  }))
+  .addSubCommand((command) {
+    command
+      .setName('sub1', translation: Translation({
+        'fr': 'sub1',
+        'en': 'sub1'
+      }))
+      .setDescription('This is a sub1 command', translation: Translation({
+        'fr': 'Ceci est une sous-commande de test',
+        'en': 'This is a subcommand'
+      }))
+      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  });
+```
+
+```dart
+final file = File('src/commands.yaml');
+final translation = Translation.file(file: file, key: 'test');
+final subTranslation = Translation.file(file: file, key: 'test.sub1');
+
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: translation)
+  .setDescription('This is a test command', translation: translation)
+  .addSubCommand((command) {
+    command
+      .setName('sub1', translation: subTranslation)
+      .setDescription('This is a subcommand description', translation: subTranslation)
+      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  });
+```
+
+```yaml
+commands:
+  test:
+    name:
+      fr: bonjour
+      en-GB: hello
+    description:
+      fr: bonjour le monde description
+      en-GB: hello world description
+
+  test.sub1:
+    name:
+      fr: sub1
+      en-GB: sub1
+    description:
+      fr: Ceci est une sous-commande de test
+      en-GB: This is a subcommand
+```
+
+:::
+
+### Command with subcommands, groups and translations
+
+Declaring translations for a group of subcommands is identical to what we have done so far.
+
+:::code-group labels=[From Map, From File, Configuration (yaml)]
+
+```dart
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: Translation({
+    'fr': 'foo',
+    'en': 'foo'
+  }))
+  .setDescription('This is a test command', translation: Translation({
+    'fr': 'Ceci est une commande de test',
+    'en': 'This is a test command'
+  }))
+  .createGroup((group) {
+    group
+      .setName('group', translation: Translation({
+        'fr': 'group',
+        'en': 'group'
+      }))
+      .setDescription('This is a group command', translation: Translation({
+        'fr': 'Ceci est un groupe de commande de test',
+        'en': 'This is a group test command'
+      }))
+      .addSubCommand((command) {
+        command
+          .setName('sub1', translation: Translation({
+            'fr': 'sub1',
+            'en': 'sub1'
+          }))
+          .setDescription('This is a sub1 command', translation: Translation({
+            'fr': 'Ceci est une sous-commande de test',
+            'en': 'This is a subcommand'
+          }))
+          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+        });
+  });
+```
+
+```dart
+final file = File('src/commands.yaml');
+
+final translation = Translation.file(file: file, key: 'test');
+final subTranslation = Translation.file(file: file, key: 'test.sub1');
+final groupTranslation = Translation.file(file: file, key: 'test.group');
+
+final commandBuilder = CommandBuilder()
+  .setName('foo', translation: translation)
+  .setDescription('This is a test command', translation: translation)
+  .createGroup((group) {
+    group
+      .setName('group', translation: groupTranslation)
+      .setDescription('This is a group command', translation: groupTranslation)
+      .addSubCommand((command) {
+        command
+          .setName('sub1', translation: subTranslation)
+          .setDescription('This is a subcommand description', translation: subTranslation)
+          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+      })
+    );
+```
+
+```yaml
+commands:
+  test.group:
+    name:
+      fr: groupe
+      en-GB: group
+    description:
+      fr: groupe description
+      en-GB: group description
+
+  test:
+    name:
+      fr: bonjour
+      en-GB: hello
+    description:
+      fr: bonjour le monde description
+      en-GB: hello world description
+
+  test.sub1:
+    name:
+      fr: sub1
+      en-GB: sub1
+    description:
+      fr: Ceci est une sous-commande de test
+      en-GB: This is a subcommand
+```
+
+:::
+
+## Command definition
+
+As we saw earlier, the declaration of a command is simple at first, but becomes very complex
+as soon as you add several subcommands or groups of subcommands.
+
+To simplify the declaration of your commands, we've decided to offer you a more modular approach
+thanks to `command definition`.
+
+The principle of command definition is to define a data structure in a so-called 'configuration' file and then to use this structure to define your commands.
+file and then use it as the source to build the command (the opposite of what we've been talking about so far).
+discussed so far).
+
+The command is therefore built from a configuration file and can then be overloaded by the builder.
+
+> [!note]
+> The `using` instruction is used to load the configuration file and build the command.
+> This command must be called before any other instruction.
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file);
+```
+
+```yaml
+commands:
+  test:
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+```
+
+:::
+
+### Define handlers
+
+When you use the command definition approach, you must define a handler for commands or sub-commands.
+
+The association between your command and its handler is made using the key used to declare a command
+in the definition file.
+
+#### Basic command handlers
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  // [!code highlight:3]
+  ..setHandler('test', (ctx) {
+    print('Hello, world!');
+  });
+```
+
+```yaml
+commands:
+  // [!code highlight]
+  test: 👈 # Named command key
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+```
+
+:::
+
+> [!note]
+> The key named `_default` is used to define a default value for a given field.
+> It is comparable to the name or description of a command that has no translation.
+
+#### Define subcommand handlers
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  ..setHandler('test', (ctx) => print('Hello, world!'))
+  // [!code ++:3]
+  ..setHandler('test.sub1', (ctx) {
+    print('Hello, world!');
+  });
+```
+
+```yaml
+commands:
+  test:
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+
+  // [!code ++:9]
+  test.add:
+    name:
+      _default: add
+      fr: ajout
+      en-GB: add
+    description:
+      _default: Add given role
+      fr: Ajoute un rôle donné
+      en-GB: Add given role
+```
+
+:::
+
+### Define groups
+
+Assigning a subcommand to a group simply requires the group to be declared in the definition file and then
+associated with the subcommand using the `group` key. and then associate it with the subcommand using the `group` key.
+
+> [!note]
+> Only one group can be associated with any one subcommand.
+
+:::code-group labels=[Definition]
+
+```yaml
+// [!code ++:10]
+groups:
+  myGroup:
+    name:
+      _default: myGroup
+      fr: mon-group
+      en-GB: my-group
+    description:
+      _default: Description of the first group
+      fr: Description de mon groupe
+      en-GB: Description of my group
+
+commands:
+  test:
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+
+  test.add:
+    // [!code ++]
+    group: myGroup
+    name:
+      _default: add
+      fr: ajout
+      en-GB: add
+    description:
+      _default: Add given role
+      fr: Ajoute un rôle donné
+      en-GB: Add given role
+```
+
+:::
+
+### Define options
+
+As with the command structure, options are no exception and must be defined in the
+definition file.
+
+Options are declared in the same way as commands, using a named key.
+
+Basically, an option is constructed as follows.
+
+---
+
+#### Basic types
+
+- `type`: Type de l'option (`string`, `integer`, `double`, `boolean`)
+- `required`: Indique si l'option est obligatoire
+- `name`: Nom de l'option
+- `description`: Description de l'option
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  // [!code --]
+  ..setHandler('test', (ctx) {
+  // [!code ++]
+  ..setHandler('test', (ctx, {required String? str}) {
+    print(str);
+  });
+```
+
+```yaml
+options:
+  - type: string
+    required: false
+    name:
+      _default: str
+      fr: mot
+      en-GB: str
+    description:
+      _default: str description
+      fr: Chaine de caractère
+      en-GB: String sentence
+```
+
+:::
+
+---
+
+#### Mentionable types
+
+- `type`: Type de l'option (`user`, `channel`, `role`, `mentionable`)
+- `required`: Indique si l'option est obligatoire
+- `name`: Nom de l'option
+- `description`: Description de l'option
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  // [!code --]
+  ..setHandler('test', (ctx) {
+  // [!code ++]
+  ..setHandler('test', (ctx, {required Role role}) {
+    print(str);
+  });
+```
+
+```yaml
+options:
+  - type: role
+    required: true
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Target role
+      fr: Role ciblé
+      en-GB: Target role
+```
+
+:::
+
+---
+
+#### Choice types
+
+- `type`: Type de l'option (`choice.string`, `choice.integer`, `choice.double`)
+- `required`: Indique si l'option est obligatoire
+- `name`: Nom de l'option
+- `description`: Description de l'option
+- `choices`: Liste des choix possibles
+- `choices.name`: Nom du choix
+- `choices.value`: Valeur du choix
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  // [!code --]
+  ..setHandler('test', (ctx) {
+  // [!code ++]
+  ..setHandler('test', (ctx, {required int language}) {
+    print(str);
+  });
+```
+
+```yaml
+options:
+  - type: choice.int
+    required: true
+    name:
+      _default: language
+      fr: language
+      en-GB: language
+    description:
+      _default: Choose the best language
+      fr: Choisissez la meilleure langue
+      en-GB: Choose the best language
+    choices:
+      - name: Dart
+        value: 1
+      - name: Python
+        value: 2
+```
+
+:::
+
+### Override command context
+
+If you want to use a context as a base and then override it according to your use cases, you can
+retrieve the command's `context` in order to access its builder and modify it.
+
+:::code-group labels=[Command, Definition]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final definition = CommandDefinition()
+  ..using(file)
+  ..setHandler('test.getValue', (ctx, {required int value}) => print(str))
+  // [!code ++:13]
+  ..context('test.getValue', (command) {
+    command
+      ..setDescription('Get value')
+      ..addOption(
+        ChoiceOption.integer(
+          name: 'value',
+          description: 'This is a value option',
+          required: true,
+          choices: [
+            Choice('First value', 1),
+            Choice('Second value', 2)
+          ]));
+  });
+```
+
+```yaml
+commands:
+  test:
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+
+  // [!code highlight:9]
+  test.getValue:
+    name:
+      _default: getValue
+      fr: get-value
+      en-GB: get-value
+    description:
+      _default: Get
+      fr: Obtenir une valeur
+      en-GB: Get value
+```
+
+:::
+
+### Registering definition
+
+:::code-group labels=[main.dart]
+
+```dart
+final file = File('config/test_commands.yaml');
+
+final client = ClientBuilder()
+  .setCache((e) => MemoryProvider())
+  .build();
+
+// [!code ++:7]
+client.commands.define((command) {
+  command
+    ..using(file)
+    ..setHandler('test.getValue', (ctx, {required int value}) {
+      print(str);
+    });
+}));
+
+await client.init();
+```
+
+:::
+
+## Command with class approach
+
+As mentioned above, there are two ways of creating a command.
+So far, each example has been written using a functional approach.
+
+It is possible to define a command using an object-oriented approach by using a contract.
+
+```dart
+abstract interface class CommandContract<T extends CommandBuilder> {
+  T build();
+}
+```
+
+### Command with declaration
+
+In this example, we will use the command definition approach to define our command with `CommandDeclaration` contract.
+
+:::code-group labels=[Command, Contract]
+
+```dart
+final class MyCommand implements CommandDeclaration {
+  FutureOr<void> handle(CommandContext ctx, {required int value}) {
+    ctx.interaction.reply('Selected value: $value');
+  }
+
+  @override
+  CommandDeclarationBuilder build() {
+    return CommandDeclarationBuilder()
+      ..setName('foo')
+      ..setDescription('This is a command description')
+      ..setHandler(handle)
+      ..addOption(
+        ChoiceOption.integer(
+          name: 'value',
+          description: 'This is a value option',
+          required: true,
+          choices: [
+            Choice('First value', 1),
+            Choice('Second value', 2)
+          ]));
+  }
+}
+```
+
+```dart
+abstract interface class CommandDeclaration implements CommandContract<CommandDeclarationBuilder>{
+  CommandDeclarationBuilder build();
+}
+```
+
+:::
+
+### Command with definition
+
+In this example, we will use the command definition approach to define our command with `CommandDefinition` contract.
+
+:::code-group labels=[Command, Definition, Contract]
+
+```dart
+final class MyCommand implements CommandDefinition {
+  FutureOr<void> addRole(CommandContext ctx, {required Role role}) {
+    ctx.interaction.reply('Role $role has been selected');
+  }
+
+  @override
+  CommandDefinitionBuilder build() {
+    return CommandDefinitionBuilder()
+      ..using(File('config/test_commands.yaml'))
+      ..setHandler('role.add', addRole);
+  }
+}
+```
+
+```yaml
+commands:
+  role:
+    name:
+      _default: role
+      fr: role
+      en-GB: role
+    description:
+      _default: Role manager
+      fr: Management des rôles
+      en-GB: Role manager
+
+  role.add:
+    name:
+      _default: add
+      fr: ajout
+      en-GB: add
+    description:
+      _default: Add given role
+      fr: Ajoute un rôle donné
+      en-GB: Add given role
+    options:
+      - type: role
+        required: true
+        name:
+          _default: role
+          fr: role
+          en-GB: role
+        description:
+          _default: Target role
+          fr: Role ciblé
+          en-GB: Target role
+```
+
+```dart
+abstract interface class CommandDefinition implements CommandContract<CommandDeclarationBuilder>{
+  CommandDefinitionBuilder build();
+}
+```
+
+:::
+
+### Registering
+
+To register a command, you need to call the `register` method on your client and pass your command as a parameter.
+
+:::code-group labels=[Registering command]
+
+```dart
+final client = ClientBuilder()
+  .build();
+
+// [!code ++]
+client.register(MyCommand.new) // 👈 Put your command
+
+await client.init();
+```
+
+:::
