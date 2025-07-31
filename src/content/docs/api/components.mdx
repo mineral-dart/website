@@ -5,4 +5,348 @@ permalink: components
 icon: lucide:layout-dashboard
 order: 4
 ---
+
 # Components
+
+Discord components are interactive elements such as buttons, drop-down menus and text fields that developers can integrate into messages sent by bots.
+
+They allow users to interact directly with bots in a more intuitive and dynamic way, improving the user experience by making interactions more engaging and responsive.
+
+## Buttons
+
+Buttons in Discord are used to allow users to interact with the interface and perform actions. For example, a button might be used to send a message, join a voice channel, or initiate a game.
+
+> [!note]
+> You can read the entire documentation about buttons [here](https://discord.com/developers/docs/interactions/message-components#buttons).
+
+### Guidelines
+
+- 34 characters max with icon or emoji.
+- 38 characters max without icon or emoji.
+- Keep text concise and to the point.
+- Use clear and easily understandable language. Avoid jargon or overly technical terms.
+- Use verbs that indicate the outcome of the action.
+- Maintain consistency in language and tone across buttons.
+- Anticipate the need for translation, test for expansion or contraction in different languages.
+
+### Types
+
+- `action` : which allow you to create an interaction
+- `link` : which allow you to open a url
+- `premium` : which allow you to buy a premium subscription
+
+---
+
+### Builders
+
+Action buttons are buttons that allow you to interact with the bot.
+
+> [!note]
+> You should define `label` or `emoji` property.
+
+| Property   | Description                        | Required |
+| ---------- | ---------------------------------- | -------- |
+| `label`    | The text displayed on the button.  | No       |
+| `emoji`    | The emoji displayed on the button. | No       |
+| `disabled` | Whether the button is disabled.    | No       |
+
+:::code-group labels=[Primary, Secondary, Success, Danger]
+
+```dart
+final primary = ButtonBuilder.primary('customId',
+  label: 'Click me',
+  emoji: PartialEmoji.fromUnicode('👍'),
+  disabled: true,
+);
+```
+
+```dart
+final secondary = ButtonBuilder.secondary('customId',
+  label: 'Click me',
+  emoji: PartialEmoji.fromUnicode('🚀'),
+  disabled: true,
+);
+```
+
+```dart
+final success = ButtonBuilder.success('customId',
+  label: 'Click me',
+  emoji: PartialEmoji.fromUnicode('✅'),
+  disabled: true,
+);
+```
+
+```dart
+final danger = ButtonBuilder.danger('customId',
+  label: 'Click me',
+  emoji: PartialEmoji.fromUnicode('❌'),
+  disabled: true,
+);
+```
+
+:::
+
+---
+
+#### Special buttons
+
+Used to redirect the user to an external URL without triggering an internal action.
+
+> [!note]
+> You should define `url` property.
+
+:::code-group labels=[Link, Premium]
+
+```dart
+final link = ButtonBuilder.link(
+  'https://mineral-foundation.com',
+  label: 'Click me',
+);
+```
+
+```dart
+final premium = ButtonBuilder.premium('sku_id');
+```
+
+:::
+
+---
+
+### Sending buttons
+
+> [!important]
+> No more than 5 components can be registered in a single `RowBuilder`.
+
+```dart
+final buttons = [
+  MessageButton.primary('primary', label: 'label'),
+  MessageButton.secondary('secondary', label: 'label'),
+  MessageButton.danger('danger', label: 'label'),
+  MessageButton.link('https://google.com', label: 'label'),
+];
+
+final builder = MessageComponentBuilder()
+  ..text('# Hello from World')
+  ..buttons(buttons);
+
+await channel.send(builder);
+```
+
+---
+
+## Dialogs
+
+Modals in Discord are interactive pop-up windows that allow users to input information or make specific choices.
+
+They are used for more complex interactions, such as filling out forms or confirming important actions, enhancing the user experience by providing a richer and more intuitive interface.
+
+> [!note]
+> The `customId` property is mandatory for dialogs.
+
+:::code-group labels=[Dialog builder]
+
+```dart
+final text = DialogBuilder(customId)
+  ..setTitle('Test Dialog')
+  ..text(
+    title: 'This is a test dialog',
+    customId: 'title',
+    constraint: DialogFieldConstraint(maxLength: 20))
+  ..paragraph(
+    title: 'This is a test paragraph',
+    customId: 'paragraph',
+    constraint: DialogFieldConstraint(maxLength: 20));
+```
+
+:::
+
+### Sending dialogs
+
+> [!note]
+> Dialogs in Discord can only be used in response to a user interaction.
+
+This means they must be triggered by a specific user action, such as clicking a button or using a command.
+
+This restriction ensures that dialogs are always relevant and contextual, thereby enhancing the user experience by providing information or choices at the appropriate time.
+
+```dart
+final text = DialogBuilder(customId)
+  ..setTitle('Test Dialog')
+  ..text(
+    title: 'This is a test dialog',
+    customId: 'title',
+    constraint: DialogFieldConstraint(maxLength: 20))
+  ..paragraph(
+    title: 'This is a test paragraph',
+    customId: 'paragraph',
+    constraint: DialogFieldConstraint(maxLength: 20));
+
+// [!code ++]
+await ctx.interaction.dialog(dialog);
+```
+
+### Handing dialogs
+
+Basiquement, vous pouvez écouter l'évènement de deux manières différentes.
+Par défaut, l'évènement catch l'ensemble des interactions de type `ServerDialogSubmitEvent`.
+
+:::code-group labels=[Class, Function]
+
+```dart
+final class MyDialogEvent extends ServerDialogSubmitEvent {
+  FutureOr<void> handle(ctx, options) {
+    // Handle dialog submit
+  }
+}
+```
+
+```dart
+client.events.server.dialogSubmit((ctx, options) {
+  // Handle dialog submit
+});
+```
+
+:::
+
+However, it is possible to choose just one component to listen to, using its `customId`.
+
+:::code-group labels=[Class, Function]
+
+```dart
+final class MyDialogEvent implements ServerDialogSubmitEvent {
+  // [!code ++:2]
+  @override
+  String? get customId => 'customId';
+
+  @override
+  FutureOr<void> handle(ctx, options) {
+    // Handle dialog submit when customId is 'customId'
+  }
+}
+```
+
+```dart
+client.events.server.dialogSubmit((ctx, options) {
+  // Handle dialog submit when customId is 'customId'
+// [!code --]
+});
+// [!code ++]
+}, customId: 'customId');
+```
+
+:::
+
+---
+
+## Select menus
+
+Selection menus in Discord are interactive elements that allow users to choose from a list of predefined options.
+
+They are used for more complex interactions where multiple choices are possible, enhancing the user experience by providing a richer, more intuitive interface.
+
+### Execution context
+
+The action resulting from the user's choice is carried out in a certain interaction context which influences the information available to the user.
+
+There are currently 2 types of interaction context:
+
+- `ServerSelectContext` : Interaction context for servers.
+- `PrivateSelectContext` : Interaction context for private messages.
+
+### Text menu
+
+:::code-group labels=[Select Menu, Function handling, Class handling]
+
+```dart
+final helloEmoji = PartialEmoji.fromUnicode('👋');
+final worldEmoji = PartialEmoji.fromUnicode('🌍');
+
+// [!code ++:4]
+final selectMenu = MessageMenu.text('text', [
+  SelectMenuOption(label: 'label 1', value: 'value 1'),
+  SelectMenuOption(label: 'label 2', value: 'value 2'),
+]);
+
+final builder = MessageComponentBuilder()
+  ..text('# Hello from World')
+  // [!code ++:1]
+  ..selectMenu(selectMenu);
+
+// [!code ++]
+await channel.send(builder);
+```
+
+```dart
+client.events.server.selectText((ctx, values) async {
+  final builder = MessageComponentBuilder()
+    ..text('Find ${values.length} channels ($channelNames)');
+
+  await ctx.interaction.reply(builder: builder, ephemeral: true);
+}, customId: 'customId');
+```
+
+```dart
+// ⚠️ Don't forget to register the event in your main file
+final class MyTextSelect extends ServerTextSelectEvent {
+  @override
+  String get customId => 'customId';
+
+  @override
+  FutureOr<void> handle(ServerSelectContext ctx, List<String> values) {
+    final builder = MessageComponentBuilder()
+      ..text('Find ${values.length} channels ($channelNames)');
+
+    await ctx.interaction.reply(builder: builder, ephemeral: true);
+  }
+}
+```
+
+:::
+
+### Channel menu
+
+:::code-group labels=[Select Menu, Function handling, Class handling]
+
+```dart
+// [!code ++:3]
+final channelSelectMenu = MessageMenu.channel('channel',
+  channelTypes: [ChannelType.guildText],
+  defaultValues: [Snowflake.parse('1322554770057068636')]);
+
+final builder = MessageComponentBuilder()
+  ..text('# Hello from World')
+  // [!code ++]
+  ..selectMenu(channelSelectMenu));
+
+// [!code ++]
+await channel.send(builder);
+```
+
+```dart
+client.events.server.selectText((ctx, channels) async {
+  final channelNames = channels.map((channel) => channel.name);
+
+  final builder = MessageComponentBuilder()
+    ..text('${values.length} channels ($channelNames)');
+
+  await ctx.interaction.reply(builder: builder, ephemeral: true);
+}, customId: 'customId');
+```
+
+```dart
+// ⚠️ Don't forget to register the event in your main file
+final class MyChannelSelect extends ServerChannelSelectEvent {
+  @override
+  String get customId => 'customId';
+
+  @override
+  FutureOr<void> handle(ServerSelectContext ctx, List<ServerChannel> channels) {
+    final builder = MessageComponentBuilder()
+      ..text('Find ${values.length} channels ($channelNames)');
+
+    await ctx.interaction.reply(builder: builder, ephemeral: true);
+  }
+}
+```
+
+:::
