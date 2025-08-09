@@ -292,7 +292,7 @@ final class MyTextSelect extends ServerTextSelectEvent {
   String get customId => 'customId';
 
   @override
-  FutureOr<void> handle(ServerSelectContext ctx, List<String> values) {
+  FutureOr<void> handle(ServerSelectContext ctx, List<String> values) async {
     final builder = MessageComponentBuilder()
       ..text('Find ${values.length} channels ($channelNames)');
 
@@ -340,7 +340,7 @@ final class MyChannelSelect extends ServerChannelSelectEvent {
   String get customId => 'customId';
 
   @override
-  FutureOr<void> handle(ServerSelectContext ctx, List<ServerChannel> channels) {
+  FutureOr<void> handle(ServerSelectContext ctx, List<ServerChannel> channels) async {
     final builder = MessageComponentBuilder()
       ..text('Find ${values.length} channels ($channelNames)');
 
