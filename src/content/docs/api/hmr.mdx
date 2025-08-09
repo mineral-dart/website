@@ -5,6 +5,7 @@ permalink: hmr
 icon: lucide:zap
 order: 11
 ---
+
 # Hot Module Reloading
 
 Within the Mineral ecosystem, HMR (Hot Module Reloading) is a feature that automatically reloads your business code
@@ -19,28 +20,57 @@ without having to restart your project or recreate a connection to Discord's Web
 
 This feature is particularly useful when you are developing your application and want to see the changes you make without having to restart your project.
 
-It is important to note that the HMR only reloads the contents of your project's `lib` folder and not the external dependencies.
+It is important to note that the HMR only reloads the contents of your root project's (based on the following glob pattern `**.dart`) without any external dependencies.
+
+> [!important]
+> The integration of HMR has been moved to a dedicated, agnostic package [`hmr`](https://pub.dev/packages/hmr).
 
 ## How it works
 
-When you start the application from the `dart run` command, it will perform three distinct actions :
+When you start the application from the `dart run bin/main.dart` command, it will perform three distinct actions :
+
 1. Initialise the connection with Discord's Websocket
 2. Listen for incoming events
-3. Start the business part of your application
+3. Start the business part of your application into an `Isolate`
 
-It is important to note that the business part of your application is run within an `Isolate` child of the main application.
+---
 
-This isolate is responsible for all the business actions in your application, such as managing commands, events and interactions.
+## Developer actions
 
-When you create, update or save a file in the `lib` folder, the application will automatically detect the changes using the `Watcher` component.
+When you develop your application and perform one of the following actions (creating, modifying, or saving a file), a chain of actions will be triggered.
 
-In one of these three cases, this watcher will destroy this child `Isolate` and create a new one, which will have the effect of reloading your entire business application.
+### Compile
+
+When a change is detected in your Dart project, the system triggers a recompilation of the affected files. This process uses Dart's kernel compilation, which transforms your source code into an intermediate representation known as the `kernel`.
+
+The kernel format is optimized for **fast incremental** compilation and **efficient execution** in Dart's runtime environments.
+
+**Advantages and Benefits of Kernel Compilation:**
+
+- **Speed:** Kernel compilation is significantly faster than full compilation, allowing for near-instantaneous reloads during development. Only the changed files and their dependencies are recompiled, reducing wait times.
+
+- **Incremental Updates:** The kernel format supports incremental compilation, meaning you don't need to rebuild your entire project for every change.
+
+- **Resource Efficiency:** By compiling only the necessary parts of your project, kernel compilation conserves system resources and minimizes CPU usage.
+
+- **Consistency:** The kernel intermediate representation ensures that the runtime environment receives a consistent and validated version of your code, reducing the risk of runtime errors due to incomplete reloads.
+
+Overall, kernel compilation is a key enabler for Hot Module Reloading in Dart, providing the foundation for efficient, reliable, and rapid development cycles.
+
+### Killing and restarting
+
+Once our application has been compiled into `kernel` format, the system deletes the existing child Isolate, which executes the developer's business code. Then, a new Isolate is created from the `.dill` file generated during compilation.
+
+This `.dill` file represents the result of the intermediate compilation and contains all the code necessary to execute the business part of the application. It is stored in a temporary directory, which ensures that the resources used are automatically cleaned up when the main application is shut down.
+
+This mechanism allows the business code to be reloaded quickly and efficiently without interrupting the main connection to Discord or restarting the entire process.
 
 > [!note]
-> The child Isolate does not create any new instances of the HMR and the Websocket client
+> See the [persistence](#persistence-through-reloading) section to learn more about how the system handles persistence.
 
-Communications from your application to Discord's Websocket API are passed from the business Isolate to the main Isolate, and then to the Websocket API.
+Thus, each change to the source code triggers a recompilation, followed by the destruction and recreation of the business Isolate, ensuring that the latest changes are taken into account immediately.
 
+---
 
 ## Persistence through reloading
 
@@ -49,26 +79,141 @@ At this stage, we have the expected behaviour of reloading the entire business a
 The problem we now face is the loss of the application's state each time it is reloaded.
 This state is as much the responsibility of the memory, if the application uses it as a cache, as of the synchronisation of the local state (application) with the remote state (Discord) of our data.
 
-There are a multitude of solutions to this problem, but the simplest and most effective is to store the alteration to the state of our data in the application's main process.
+In our case, when HMR is enabled (i.e., in development mode), all packets entering the application from Discord are intercepted by the main process. The main process listens for these events and dynamically redistributes them to the "business" isolate that executes the application code.
 
-To do this, we need to intercept packets entering the application using Discord's Websocket, and then store them in memory.
-Each time the application is reloaded, this data can be re-injected into the business application in order to re-synchronise it by replaying past events.
+This mechanism ensures that, even when the business code is reloaded after a change, the isolate receives all Discord events as in the production environment. Thus, execution remains transparent and consistent between development and production modes, without loss of information or interruption of synchronisation with Discord.
 
-## Using the HMR
+#### No reconnection to Discord WebSocket
+
+Thanks to the separation between the main process (which manages the connection to the WebSocket) and the business isolate, reloading the code does not require resetting the connection to Discord. This avoids reaching the strict limit of 1,000 reconnections per day imposed by Discord.
+
+> [!note]
+> See the Discord [documentation](https://discord.com/developers/docs/events/gateway#identifying) on reconnection limits
+
+#### Drastic reduction in rate-limit cases
+
+By avoiding unnecessary reconnections, the risk of being temporarily blocked by Discord due to exceeding the quota is greatly reduced. This allows for peaceful development without fear of being penalised by the rate-limit system.
+
+#### Transparent use for the developer
+
+The developer does not have to worry about managing the connection or reloading events. Everything is automated, making the development experience smooth and uninterrupted, even when making frequent changes to the business code.
+
+---
+
+## Usages
 
 In your `main.dart` file, add the retrieval of the Isolate port to the `main` function parameters, then transfer them to your `ClientBuilder` instance using the `setHmrDevPort` method.
 
 :::code-group labels=[main.dart]
+
 ```dart
 Future<void> main() async { // [!code --]
 Future<void> main(_, port) async { // [!code ++]
   final client = ClientBuilder()
-      .setCache((e) => MemoryProvider())
       .setHmrDevPort(port) // [!code ++]
       .build();
-  
+
   await client.init();
 }
 ```
+
 :::
 
+The use of HMR is based on two main components:
+
+#### Watcher
+
+The Watcher monitors changes to project files, automatically detecting creations, deletions, or modifications. It applies filters and optimisations (such as debounce) to respond only to relevant changes, ensuring efficient and responsive monitoring of the source code.
+
+#### Runner
+
+The Runner takes over as soon as a change is detected: it compiles the modified code into kernel format, deletes the existing Isolate, and starts a new Isolate with the updated code. This process ensures that the application always runs the latest version of the code without interrupting the main connection or losing critical state.
+
+:::code-group labels=[watcher.dart]
+
+```dart
+final watcher = Watcher(
+  onStart: () => print('Started'),
+  onFileChange: (int eventType, File file) => print('File changed'),
+  middlewares: [
+    IgnoreMiddleware(['~', '.dart_tool', '.git', '.idea', '.vscode']),
+    IncludeMiddleware([Glob('**.dart'), ..._watchedFiles]),
+    DebounceMiddleware(Duration(milliseconds: 50), dateTime),
+  ]
+);
+
+watcher.watch();
+```
+
+:::
+
+---
+
+### Excludes
+
+Exclusion of certain files or folders from the monitoring process.
+
+:::code-group labels=[watcher.dart]
+
+```dart
+final watcher = Watcher(
+  onStart: () => print('Started'),
+  onFileChange: (int eventType, File file) => print('File changed'),
+  middlewares: [
+    IgnoreMiddleware(['~', '.dart_tool', '.git', '.idea', '.vscode']), // [!code highlight]
+    IncludeMiddleware([Glob('**.dart'), ..._watchedFiles]),
+    DebounceMiddleware(Duration(milliseconds: 50), dateTime),
+  ]
+);
+```
+
+:::
+
+When the Watcher detects a change in the project, it first applies this middleware to ignore specified paths (e.g., `~`, `.dart_tool`, `.git`, `.idea`, `.vscode`). This prevents changes in temporary, configuration, or version control folders from unnecessarily triggering code reloading.
+
+---
+
+### Includes
+
+Specifies exactly which files should be taken into account by the Watcher when detecting changes.
+
+:::code-group labels=[watcher.dart]
+
+```dart
+final watcher = Watcher(
+  onStart: () => print('Started'),
+  onFileChange: (int eventType, File file) => print('File changed'),
+  middlewares: [
+    IgnoreMiddleware(['~', '.dart_tool', '.git', '.idea', '.vscode']),
+    IncludeMiddleware([Glob('**.dart'), ..._watchedFiles]), // [!code highlight]
+    DebounceMiddleware(Duration(milliseconds: 50), dateTime),
+  ]
+);
+```
+
+:::
+
+This middleware filters events so that it only reacts to changes affecting files matching the given patterns (e.g., all Dart files via `Glob('**.dart')`). This prevents irrelevant changes (such as configuration files or static resources) from triggering code reloading.
+
+In some cases, it is necessary to be able to listen to other files that play an important role in the project.
+
+In a hypothetical case, we would like to listen for changes to a configuration file written in YAML format.
+
+:::code-group labels=[main.dart, configuration.yaml]
+
+```dart
+void main(_, port) async {
+  final configuration = await File('configuration.yaml').readAsYaml();
+  print(configuration['sentence']);
+
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .watch([Glob('**.yaml')]) // [!code ++]
+    .build();
+```
+
+```yaml
+sentence: Hello from Mineral
+```
+
+:::
