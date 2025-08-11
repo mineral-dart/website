@@ -83,7 +83,12 @@ In the case of a command or subcommand, it is necessary to define a handler that
 final commandBuilder = CommandBuilder()
   .setName('foo')
   .setDescription('This is a command description')
-  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  .setHandler((ctx) {
+    final builder = MessageComponentBuilder()
+      ..text('Hello from World');
+
+    ctx.interaction.reply(builder);
+  });
 ```
 
 ### Context
@@ -270,13 +275,24 @@ using the `.addSubCommand` method.
 final commandBuilder = CommandBuilder()
   .setName('foo')
   .setDescription('This is a command description')
-  .setHandler((ctx) => ctx.interaction.reply('Hello, world!')); // [!code --]
-  // [!code ++:6]
+  // [!code --:6]
+  .setHandler((ctx) async {
+    final builder = MessageComponentBuilder()
+      ..text('Hello from World');
+
+    await ctx.interaction.reply(builder);
+  });
+  // [!code ++:11]
   .addSubCommand((command) {
     command
       .setName('bar')
       .setDescription('This is a subcommand description')
-      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+      .setHandler((ctx) async {
+        final builder = MessageComponentBuilder()
+          ..text('Hello from World');
+
+        await ctx.interaction.reply(builder);
+      });
   });
 ```
 
@@ -297,8 +313,14 @@ When you define a group, you must add one or more subcommands to it.
 final commandBuilder = CommandBuilder()
   .setName('foo')
   .setDescription('This is a command description')
-  .setHandler((ctx) => ctx.interaction.reply('Hello, world!')); // [!code --]
-  // [!code ++:11]
+  // [!code --:6]
+  .setHandler((ctx) async {
+    final builder = MessageComponentBuilder()
+      ..text('Hello from World');
+
+    await ctx.interaction.reply(builder);
+  });
+  // [!code ++:15]
   .createGroup((group) {
     group
       .setName('group')
@@ -307,7 +329,12 @@ final commandBuilder = CommandBuilder()
         command
           .setName('bar')
           .setDescription('This is a subcommand description')
-          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+          .setHandler((ctx) async {
+            final builder = MessageComponentBuilder()
+              ..text('Hello from World');
+
+            await ctx.interaction.reply(builder);
+          });
       });
   });
 ```
@@ -320,15 +347,20 @@ Once you have defined your order, you need to declare it in your client for it t
 
 ```dart
 final client = ClientBuilder()
-  .setCache((e) => MemoryProvider())
+  .setCache(MemoryProvider.new)
   .build();
 
-// [!code highlight:6]
+// [!code ++:10]
 client.commands.declare((command) {
   command
     ..setName('foo')
     ..setDescription('This is a command description')
-    ..setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+    ..setHandler((ctx) async {
+      final builder = MessageComponentBuilder()
+        ..text('Hello from World');
+
+      await ctx.interaction.reply(builder);
+    });
 });
 
 await client.init();
@@ -372,7 +404,12 @@ final commandBuilder = CommandBuilder()
     'fr': 'Ceci est une commande de test',
     'en': 'This is a test command'
   }))
-  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  .setHandler((ctx) {
+    final builder = MessageComponentBuilder()
+      ..text('Hello from World');
+
+    ctx.interaction.reply(builder);
+  });
 ```
 
 ```dart
@@ -382,7 +419,12 @@ final translation = Translation.file(file: file, key: 'test');
 final commandBuilder = CommandBuilder()
   .setName('foo', translation: translation)
   .setDescription('This is a test command', translation: translation)
-  .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+  .setHandler((ctx) async {
+    final builder = MessageComponentBuilder()
+      ..text('Hello from World');
+
+    await ctx.interaction.reply(builder);
+  });
 ```
 
 ```yaml
@@ -422,7 +464,12 @@ final commandBuilder = CommandBuilder()
         'fr': 'Ceci est une sous-commande de test',
         'en': 'This is a subcommand'
       }))
-      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+      .setHandler((ctx) async {
+        final builder = MessageComponentBuilder()
+          ..text('Hello from World');
+
+        await ctx.interaction.reply(builder);
+      });
   });
 ```
 
@@ -438,7 +485,12 @@ final commandBuilder = CommandBuilder()
     command
       .setName('sub1', translation: subTranslation)
       .setDescription('This is a subcommand description', translation: subTranslation)
-      .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+      .setHandler((ctx) async {
+        final builder = MessageComponentBuilder()
+          ..text('Hello from World');
+
+        await ctx.interaction.reply(builder);
+      });
   });
 ```
 
@@ -499,7 +551,12 @@ final commandBuilder = CommandBuilder()
             'fr': 'Ceci est une sous-commande de test',
             'en': 'This is a subcommand'
           }))
-          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+          .setHandler((ctx) async {
+            final builder = MessageComponentBuilder()
+              ..text('Hello from World');
+
+            await ctx.interaction.reply(builder);
+          });
         });
   });
 ```
@@ -522,7 +579,12 @@ final commandBuilder = CommandBuilder()
         command
           .setName('sub1', translation: subTranslation)
           .setDescription('This is a subcommand description', translation: subTranslation)
-          .setHandler((ctx) => ctx.interaction.reply('Hello, world!'));
+          .setHandler((ctx) async {
+            final builder = MessageComponentBuilder()
+              ..text('Hello from World');
+
+            await ctx.interaction.reply(builder);
+          });
       })
     );
 ```
@@ -969,8 +1031,11 @@ In this example, we will use the command definition approach to define our comma
 
 ```dart
 final class MyCommand implements CommandDeclaration {
-  FutureOr<void> handle(CommandContext ctx, {required int value}) {
-    ctx.interaction.reply('Selected value: $value');
+  FutureOr<void> handle(CommandContext ctx, {required int value}) async {
+    final builder = MessageComponentBuilder()
+      ..text('Selected value: $value');
+
+    await ctx.interaction.reply(builder);
   }
 
   @override
@@ -1008,8 +1073,11 @@ In this example, we will use the command definition approach to define our comma
 
 ```dart
 final class MyCommand implements CommandDefinition {
-  FutureOr<void> addRole(CommandContext ctx, {required Role role}) {
-    ctx.interaction.reply('Role $role has been selected');
+  FutureOr<void> addRole(CommandContext ctx, {required Role role}) async {
+    final builder = MessageComponentBuilder()
+      ..text('Role $role has been selected');
+
+    await ctx.interaction.reply(builder);
   }
 
   @override
@@ -1070,13 +1138,15 @@ To register a command, you need to call the `register` method on your client and
 :::code-group labels=[Registering command]
 
 ```dart
-final client = ClientBuilder()
-  .build();
+Future<void> main() async {
+  final client = ClientBuilder()
+    .build();
 
-// [!code ++]
-client.register(MyCommand.new) // 👈 Put your command
+  // [!code ++]
+  client.register(MyCommand.new) // 👈 Put your command
 
-await client.init();
+  await client.init();
+}
 ```
 
 :::

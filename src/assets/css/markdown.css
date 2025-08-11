@@ -85,6 +85,9 @@ h6 {
         position: relative;
         counter-increment: list-counter;
         padding-left: 1.75em;
+        > p:first-child {
+            padding: 0;
+        }
     }
 
     ol > li::before {
@@ -334,6 +337,7 @@ html.dark .prose > .astro-code {
     padding: 0.2rem 0.3rem;
     background: color-mix(in srgb, var(--background) 30%, transparent);
     font-weight: 500;
+    word-break: keep-all;
 
     &::before,
     &::after {

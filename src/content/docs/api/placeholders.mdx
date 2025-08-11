@@ -5,6 +5,7 @@ permalink: placeholders
 icon: lucide:hash
 order: 7
 ---
+
 # Placeholders
 
 Placeholders can be used to replace values in configuration files and are useful for to inject values from external
@@ -14,14 +15,15 @@ sources into your code.
 
 ## Introduction
 
-When a developer designs an application for distribution, they generally need to be able to customise its configurations, 
+When a developer designs an application for distribution, they generally need to be able to customise its configurations,
 so we generally end up with configuration files written in `yaml` or `json`.
 
 This configuration imposes two major constraints:
+
 - The data structure is important and is required for the application to function properly
 - The values are static and cannot be changed without modifying the configuration file.
 
-This second point is certainly the most important, as it is necessary to allow the application to function in a totally 
+This second point is certainly the most important, as it is necessary to allow the application to function in a totally
 transparent way depending on the environment in which it is evolving.
 
 We can therefore conclude that it is necessary to be able to inject values into the configuration files.
@@ -33,14 +35,17 @@ We can therefore conclude that it is necessary to be able to inject values into 
 Define a `config.yaml` configuration file containing a `sayHello` key with the value `Hello {username} {emoji}`.
 
 :::code-group labels=[config.yaml]
+
 ```yaml
 sayHello: Hello {username} {emoji}
 ```
+
 :::
 
 ### Static
 
 :::code-group labels=[main.dart]
+
 ```dart
 void main() async {
   final config = await File('config.yaml').readAsYaml();
@@ -48,17 +53,18 @@ void main() async {
   final placeholder = Placeholder(values: {
     'emoji': '👋',
   });
-  
+
   final value = placeholder.apply(config['sayHello']); // [!code ++]
   print(value); // Hello {username} 👋
 }
 ```
+
 :::
 
 We then instantiated a `Placeholder` object containing a set of values to inject into our configuration file.
 Finally, we applied our placeholder to our configuration value.
 
-We can see that the `emoji` slot has been replaced by 👋 but not the `username` key. This is because the `username` 
+We can see that the `emoji` slot has been replaced by 👋 but not the `username` key. This is because the `username`
 value has not been declared in our placeholder.
 
 ### Dynamic
@@ -73,16 +79,19 @@ void main() async {
   final placeholder = Placeholder(values: {
     'emoji': '👋',
   });
-  
+
   client.events.server.messageCreate((ServerMessage message) async {
     if (!message.authorIsBot) {
       final author = await message.resolveMember();
-      
+
       final str = placeholder.apply(config['sayHello'], values: {
         'username': message.author.username, // [!code ++]
       });
-      
-      await message.reply(content: str); // Hello John 👋
+
+      final builder = MessageComponentBuilder()
+        ..text(str);
+
+      await message.reply(builder); // Hello John 👋
     }
   });
 }
@@ -95,7 +104,7 @@ In this exercise, we will try out the example of a ticketing module.
 - Sending a drop-down menu to choose a ticket type
 - Creation of a chat room with specific permissions
 
-The declaration enabling this variability is provided thanks to the notion of environment via data injection 
+The declaration enabling this variability is provided thanks to the notion of environment via data injection
 in the runtime.
 
 > [!note]
@@ -106,6 +115,7 @@ in the runtime.
 First, we will declare the environment variables required for our ticketing module to function correctly.
 
 :::code-group labels=[config.yaml, .env]
+
 ```yaml
 tickets:
   requestRole:
@@ -120,29 +130,34 @@ tickets:
 ROLE_ADMIN=1333087322459344936
 ROLE_MODERATOR=1333087372446797947
 ```
+
 :::
 
-In this example, we declare a ticket with the unique identifier `requestRole`, which will be used to request a role on 
+In this example, we declare a ticket with the unique identifier `requestRole`, which will be used to request a role on
 the server, and we also have a list of roles authorised to handle this type of ticket.
 
 We can now make a modification to our configuration file.
 
 :::code-group labels=[config.yaml]
+
 ```yaml
 tickets:
   requestRole:
     name: Request role
     description: Request a role on the server
     roles:
-      - {env.ROLE_ADMIN}
-      - {env.ROLE_MODERATOR}
+      - { env.ROLE_ADMIN }
+      - { env.ROLE_MODERATOR }
 ```
+
 :::
 
 ### Data model
+
 Let's declare the data model that allows us to interact with our configuration file.
 
 :::code-group labels=[ticket.dart]
+
 ```dart
 final class Ticket {
   final String uid;
@@ -169,22 +184,25 @@ final class Ticket {
   }
 }
 ```
+
 :::
 
 We can now load our configuration file and instantiate our data model.
 
 :::code-group labels=[main.dart]
+
 ```dart
 void main() async {
   final config = await File('config.yaml').readAsYaml();
-  
+
   final List<Ticket> tickets = config['tickets'].entries
     .map((entry) => Ticket.of(entry.key, entry.value))
     .toList();
-  
+
   print(tickets);
 }
 ```
+
 :::
 
 ---
@@ -194,6 +212,7 @@ void main() async {
 At this stage, we have converted our configuration file into a data model that can be used by our application.
 
 We now need to apply our environment variables to our entities. There are two ways of doing this:
+
 1. Conversion at instantiation of each `Ticket` model
 2. Conversion on reading the value
 
@@ -203,11 +222,12 @@ In our case, we'll opt for an injection on reading the value when choosing a tic
 > We'll use an **interactive component**, more information in the [dedicated section](/fundamentals/interactive-components).
 
 :::code-group labels=[render, handling, inject]
+
 ```dart
 final class MessageTicketComponent implements InteractiveSelectMenu {
   @override
   String get customId => 'tickets::trigger';
-  
+
   // [!code ++:2]
   final List<Ticket> tickets;
   MessageTicketComponent(this.tickets);
@@ -216,7 +236,7 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
   SelectMenuBuilderContract build() {
     final builder = SelectMenuBuilder.text(customId)
       ..setPlaceholder('Please select a ticket');
-    
+
     // [!code ++:6]
     for (final ticket in tickets) {
       builder.addOption(
@@ -224,16 +244,17 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
         value: ticket.uid,
       );
     }
-    
+
     return builder;
   }
 }
 ```
+
 ```dart
 final class MessageTicketComponent implements InteractiveSelectMenu {
   @override
   String get customId => 'tickets::trigger';
-  
+
   final List<Ticket> tickets;
   MessageTicketComponent(this.tickets);
 
@@ -242,7 +263,7 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
     if (ctx case ServerSelectContext ctx) {
       final ticket = tickets.firstWhere((ticket) => ticket.uid == ticketUid);
       final server = await ctx.message.resolveServer();
-      
+
       await server.channels.create(
         ChannelBuilder.text()
           ..setName('Ticket of ${ticket.name}')
@@ -275,9 +296,9 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
 final class MessageTicketComponent implements InteractiveSelectMenu {
   @override
   String get customId => 'tickets::trigger';
-  
+
   final placeholder = EnvPlaceholder(); // [!code ++]
-  
+
   final List<Ticket> tickets;
   MessageTicketComponent(this.tickets);
 
@@ -286,7 +307,7 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
     if (ctx case ServerSelectContext ctx) {
       final ticket = tickets.firstWhere((ticket) => ticket.uid == ticketUid);
       final server = await ctx.message.resolveServer();
-      
+
       await server.channels.create(
         ChannelBuilder.text()
           ..setName('Ticket of ${ticket.name}')
@@ -307,6 +328,7 @@ final class MessageTicketComponent implements InteractiveSelectMenu {
   SelectMenuBuilderContract build() { ...}
 }
 ```
+
 :::
 
 Now that our component has been created, we need to send our menu to a target channel.
@@ -314,18 +336,18 @@ Now that our component has been created, we need to send our menu to a target ch
 For our example, we'll use the channel in which the command will be executed.
 
 :::code-group labels=[command.dart]
+
 ```dart
 final class TicketCommand with Component implements CommandDeclaration {
   Future<void> handle(ServerCommandContext ctx) async {
     if (ctx.channel case ServerTextChannel channel) {
       final menu = components.get('tickets::trigger'); // [!code ++]
-      
-      await channel.send(
-        content: 'Please select a ticket',
-        components: [
-          RowBuilder()
-            ..addComponent(menu.build()) // [!code ++]
-        ]);
+
+      final builder = MessageComponentBuilder()
+        ..text('please select a ticket')
+        ..selectMenu(menu);
+
+      await channel.send(builder);
     }
   }
 
@@ -338,29 +360,32 @@ final class TicketCommand with Component implements CommandDeclaration {
   }
 }
 ```
+
 :::
 
 Finally, we need to register our component with our client.
 
 :::code-group labels=[main.dart]
+
 ```dart
 void main() async {
   final config = await File('config.yaml').readAsYaml();
-  
+
   final List<Ticket> tickets = config['tickets'].entries
     .map((entry) => Ticket.of(entry.key, entry.value))
     .toList();
 
   final client = ClientBuilder()
     .build();
-  
+
   // [!code ++:2]
   client.register(() => MessageTicketComponent(tickets));
   client.register(TicketCommand.new);
-  
+
   await client.init();
 }
 ```
+
 :::
 
 ## Extension
@@ -368,6 +393,7 @@ void main() async {
 Create your own placeholder by implementing the `PlaceholderContract` interface.
 
 :::code-group labels=[placeholder.dart, contract]
+
 ```dart
 final class MyPlaceholder implements PlaceholderContract {
   final Map<String, dynamic> _values = {};
@@ -394,6 +420,7 @@ final class MyPlaceholder implements PlaceholderContract {
   }
 }
 ```
+
 ```dart
 abstract interface class PlaceholderContract {
   Map<String, dynamic> get values;
@@ -401,5 +428,5 @@ abstract interface class PlaceholderContract {
   String apply(String value);
 }
 ```
-:::
 
+:::
