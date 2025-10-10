@@ -187,7 +187,7 @@ final commandBuilder = CommandBuilder()
 
 Basic types are available to define options for your commands.
 
-:::code-group labels=[String, Integer, Double, Boolean]
+:::code-group labels=[String, Integer, Double, Boolean, Attachment]
 
 ```dart
 Option.string(
@@ -217,6 +217,14 @@ Option.double(
 Option.boolean(
   name: 'bool',
   description: 'Your boolean',
+  required: true
+);
+```
+
+```dart
+Option.attachment(
+  name: 'attachment',
+  description: 'Your attachment',
   required: true
 );
 ```
