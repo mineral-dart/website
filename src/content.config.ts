@@ -7,27 +7,41 @@ export const docSchema = z.object({
   permalink: z.string().optional(),
   order: z.number(),
   icon: z.string().optional(),
-})
+});
+
+const preface = defineCollection({
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/docs/preface",
+  }),
+  schema: docSchema,
+});
 
 const guide = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/guide" }),
-  schema: docSchema
-})
+  schema: docSchema,
+});
 
 const api = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/api" }),
-  schema: docSchema
-})
+  schema: docSchema,
+});
 
 const concepts = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/concepts" }),
-  schema: docSchema
-})
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/docs/concepts",
+  }),
+  schema: docSchema,
+});
 
 const examples = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs/examples" }),
-  schema: docSchema
-})
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/docs/examples",
+  }),
+  schema: docSchema,
+});
 
 const blog = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/blog" }),
@@ -37,8 +51,15 @@ const blog = defineCollection({
     permalink: z.string().optional(),
     thumbnail: z.string().optional(),
     authors: z.array(z.string()).optional(),
-    publishedAt: z.string().optional()
+    publishedAt: z.string().optional(),
   }),
-})
+});
 
-export const collections = { blog, guide, api, concepts, examples };
+export const collections = {
+  blog,
+  preface,
+  guide,
+  api,
+  concepts,
+  examples,
+};

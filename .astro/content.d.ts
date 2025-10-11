@@ -213,6 +213,14 @@ declare module 'astro:content' {
   rendered?: RenderedContent;
   filePath?: string;
 }>;
+"preface": Record<string, {
+  id: string;
+  body?: string;
+  collection: "preface";
+  data: InferEntrySchema<"preface">;
+  rendered?: RenderedContent;
+  filePath?: string;
+}>;
 
 	};
 
