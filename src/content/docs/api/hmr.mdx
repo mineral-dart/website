@@ -11,8 +11,8 @@ order: 11
 Within the Mineral ecosystem, HMR (Hot Module Reloading) is a feature that automatically reloads your business code
 without having to restart your project or recreate a connection to Discord's Websocket API.
 
-> [!warning]
-> This feature is experimental and may not work as expected.
+> [!important]
+> The integration of HMR uses an agnostic package named [`hmr`](https://pub.dev/packages/hmr).
 
 ---
 
@@ -22,8 +22,7 @@ This feature is particularly useful when you are developing your application and
 
 It is important to note that the HMR only reloads the contents of your root project's (based on the following glob pattern `**.dart`) without any external dependencies.
 
-> [!important]
-> The integration of HMR has been moved to a dedicated, agnostic package [`hmr`](https://pub.dev/packages/hmr).
+---
 
 ## How it works
 

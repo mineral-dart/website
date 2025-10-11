@@ -3,8 +3,9 @@ title: Installation
 description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 permalink: installation
 icon: lucide:play
-order: 1
+order: 2
 ---
+
 # Installation
 
 Before embarking on this crazy discord adventure, you will need to follow the steps outlined below to set up a clean and healthy project.
@@ -12,9 +13,11 @@ Before embarking on this crazy discord adventure, you will need to follow the st
 ---
 
 ## Prerequisites
+
 Please make sure you have the following tools installed on your machine before you start.
 
 ### Dart lang
+
 The Mineral framework has been developed entirely in the Dart programming language, so you will need to install it in your development environment first. In order to best install it, please refer to the [official documentation](https://dart.dev/get-dart).
 
 > [!note]
@@ -31,12 +34,14 @@ You can use the Mineral CLI to create a new project.
 Follow the steps below to install the CLI.
 
 :::code-group auto
+
 ```bash
 dart pub global activate mineral_cli [version]
 
 cd path/to/your/projects
 mineral create my_project
 ```
+
 :::
 
 > [!note]
@@ -47,6 +52,7 @@ mineral create my_project
 ### From scratch
 
 Use the following command to start a new blank Dart project.
+
 ```bash
 dart create my_project
 ```
@@ -54,11 +60,13 @@ dart create my_project
 After creating the project, you will need to add the Mineral framework to your `pubspec.yaml` file.
 
 :::code-group labels=[pubspec.yaml]
+
 ```yaml
 dependencies:
   mineral: ^4.0.0-dev.11
   mineral_cache: ^1.0.0-dev.4
 ```
+
 :::
 
 > [!note]
@@ -67,15 +75,18 @@ dependencies:
 Then run the following command to install the dependencies.
 
 :::code-group auto
+
 ```bash
 dart pub get
 ```
+
 :::
 
 Make sure you have the following minimal structure in your project.
 The `.env` file is not created by default when you start a new Dart project, don't forget to create it.
 
 :::code-group labels=[boilerplate, .env]
+
 ```
 ├── bin
 │  └── main.dart
@@ -83,6 +94,7 @@ The `.env` file is not created by default when you start a new Dart project, don
 ├── pubspec.yaml
 └── .env
 ```
+
 ```dotenv
 DART_ENV=development
 TOKEN=your_discord_token
@@ -91,6 +103,7 @@ DISCORD_WS_VERSION=12
 INTENT=3276799
 LOG_LEVEL=info
 ```
+
 :::
 
 ### Application
@@ -98,6 +111,7 @@ LOG_LEVEL=info
 The `main.dart` file is the entry point of your application. This is where you will start your bot.
 
 :::code-group labels=[main.dart]
+
 ```dart
 void main(_, port) async {
   final client = ClientBuilder()
@@ -107,17 +121,19 @@ void main(_, port) async {
   await client.init();
 }
 ```
+
 :::
 
 To check that your application is working properly, we recommend that you use the `ready` event.
 
 :::code-group labels=[main.dart]
+
 ```dart
 void main(_, port) async {
   final client = ClientBuilder()
     .setHmrDevPort(port)
     .build();
-  
+
   // [!code ++:3]
   client.events.ready((Bot bot) {
     client.logger.info('${bot.username} is ready ! 🚀');
@@ -126,6 +142,7 @@ void main(_, port) async {
   await client.init();
 }
 ```
+
 :::
 
 ## Running the application
@@ -133,7 +150,9 @@ void main(_, port) async {
 Finally, you can run your application with the following command.
 
 :::code-group auto
+
 ```bash
 dart run src/main.dart
 ```
+
 :::

@@ -3,8 +3,9 @@ title: Commands
 description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 permalink: commands
 icon: lucide:square-slash
-order: 5
+order: 6
 ---
+
 # Commands
 
 Slash commands were implemented with the aim of replacing messages considered as commands with a start-of-line
@@ -31,6 +32,7 @@ syntax errors.
 From the `Client`, we can chain commands listeners using the following pattern :
 
 :::code-group labels=[main.dart]
+
 ```dart
 Future<void> main(_, port) async {
   final client = ClientBuilder()
@@ -47,22 +49,24 @@ Future<void> main(_, port) async {
   await client.init();
 }
 ```
+
 :::
 
 ---
 
 ## Object-oriented approach
 
-For benchmarking purposes, we recommend using the `functional` approach, but when developing applications requiring 
+For benchmarking purposes, we recommend using the `functional` approach, but when developing applications requiring
 more than 2 events or commands, we recommend using the object-oriented approach.
 
 :::code-group labels=[command.dart, main.dart]
+
 ```dart
 final class MyCommand implements CommandDeclaration {
   void handle(CommandContext ctx) {
     print('Hello, world!');
   }
-  
+
   @override
   CommandDeclarationBuilder build() {
     return CommandDeclarationBuilder()
@@ -72,6 +76,7 @@ final class MyCommand implements CommandDeclaration {
   }
 }
 ```
+
 ```dart
 Future<void> main(_, port) async {
   final client = ClientBuilder()
@@ -83,4 +88,5 @@ Future<void> main(_, port) async {
   await client.init();
 }
 ```
+
 :::

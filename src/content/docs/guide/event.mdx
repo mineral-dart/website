@@ -3,8 +3,9 @@ title: Events
 description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 permalink: events
 icon: lucide:bell
-order: 4
+order: 5
 ---
+
 # Events
 
 The Discord API uses a real-time event system transmitted via a WebSocket connection to allow client applications to receive instant updates from the server.
@@ -31,9 +32,11 @@ Let's take a simple example of a bot that listens to the `MessageCreate` event a
 From the `Client`, we can chain event listeners using the following pattern :
 
 :::code-group labels=[boilerplate, main.dart]
+
 ```dart
 client.events.<context>.<event>(<listener>)
 ```
+
 ```dart
 Future<void> main(_, port) async {
   final client = ClientBuilder()
@@ -47,16 +50,18 @@ Future<void> main(_, port) async {
   await client.init();
 }
 ```
+
 :::
 
 ---
 
 ## Object-oriented approach
 
-For benchmarking purposes, we recommend using the `functional` approach, but when developing applications requiring 
+For benchmarking purposes, we recommend using the `functional` approach, but when developing applications requiring
 more than 2 events or commands, we recommend using the object-oriented approach.
 
 :::code-group labels=[boilerplate, message_create.dart, main.dart]
+
 ```dart
 final class <ClassName> extends <Event> {
   @override
@@ -65,6 +70,7 @@ final class <ClassName> extends <Event> {
   }
 }
 ```
+
 ```dart
 final class MessageCreate extends MessageCreateEvent {
   @override
@@ -73,6 +79,7 @@ final class MessageCreate extends MessageCreateEvent {
   }
 }
 ```
+
 ```dart
 Future<void> main(_, port) async {
   final client = ClientBuilder()
@@ -84,4 +91,5 @@ Future<void> main(_, port) async {
   await client.init();
 }
 ```
+
 :::

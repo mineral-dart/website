@@ -1,0 +1,152 @@
+---
+title: Contribute
+description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+permalink: contribute
+icon: lucide:sparkles
+order: 1
+---
+
+# Contribute
+
+Contributions are the basis of any open-source project. They enable the project to evolve, fix bugs, add features and much more.
+We're delighted that you want to contribute to our project !
+
+> [!important]
+> Your help is invaluable in improving and growing this project.
+
+---
+
+## How to contribute
+
+Contributions can take several forms. Here are a few examples:
+
+- Improving the documentation with your feedback and experiments
+- Report and/or fixing bugs in [issues](https://github.com/mineral-dart/core/issues)
+- Adding missing functionalities through forks and pull requests
+- Suggest improvements to the user experience
+- Help the community by answering questions from other users
+
+---
+
+## Improving the documentation
+
+The documentation is the first point of contact for users. It must be clear, concise and easy to understand.
+
+This aspect of the project is crucial to its adoption and use by the community, but it takes up an infinite amount of
+time to write, to the detriment of the actual development of new features.
+
+---
+
+### API documentation
+
+The API documentation is generated using the `dartdoc` tool. It is automatically generated and updated with each new
+release.
+
+Each method must be documented, as well as each parameter, return type and exception.
+It's this aspect in particular that consumes an infinite amount of our time.
+
+Si vous souhaitez-nus aider à améliorer la documentation, vous pouvez suivre les étapes suivantes :
+
+1. Fork the project
+2. Make your `dartdoc` comments
+3. Push your changes and create a pull request
+
+You can also use the following template to document the methods :
+
+````dart
+/// Title of the method
+///
+/// Description of the method
+///
+/// Example :
+/// ```dart
+/// // Code example
+/// ```
+///
+void fn() {}
+````
+
+### Website documentation
+
+The framework documentation is the second most important part of the documentation.
+understand how to use the framework.
+
+Unlike API documentation, here we'll explain the concepts, functionalities and best practices, while providing
+theoretical and concrete examples to help users understand how the framework works while providing theoretical and
+practical examples to help users understand how the framework works.
+
+If you wish to clarify certain points, add examples or even correct errors, you can follow the steps below:
+
+1. Fork the [repository](https://github.com/mineral-dart/website)
+2. Make your changes
+3. Push your changes and create a pull request
+4. Wait for the review
+5. Once the review is complete, your changes will be merged
+
+### Reporting bugs
+
+Bugs are a common occurrence in software development. They can be caused by a variety of factors, such as incorrect
+implementation, incorrect use of the framework, or even a lack of understanding of the framework.
+
+The more information you provide, the easier it will be for us to reproduce the bug and correct it, so we recommend that
+you provide the following information.
+
+- Give context (show `pubspec.yaml`)
+- Description of the bug (copy/paste the error message)
+- Steps to reproduce the bug
+- Expected behavior
+- Actual behavior
+- Screenshots or code snippets (optional)
+
+If you encounter a bug, you can report it by following these steps:
+
+1. Go to the [issues](https://github.com/mineral-dart/core/issues/new)
+2. Fill in the form with the necessary information
+3. Click on the "Submit new issue" button
+4. Wait for the review by the core team
+
+### Adding missing features
+
+The framework is constantly evolving. New features are added regularly to improve the user experience and make the
+framework more complete.
+
+> [!note]
+> You can find the roadmap [here](https://github.com/orgs/mineral-dart/projects/5/views/2).
+
+#### Installation
+
+When we develop the core functionalities, it is preferable to create a blank application simulating a real application
+with the `core` package at the same folder level.
+
+We therefore consider the following structure :
+
+```
+├── root
+│  └── bot
+│  └── core
+│  │
+│  └── other packages
+```
+
+In your bot application `pubspec.yaml` file, add the following dependency.
+
+> [!note]
+> In accordance with the [documentation](https://dart.dev/tools/pub/dependencies), using a `path` allows you to develop functionality locally.
+
+:::code-group labels=[pubspec.yaml, bash]
+
+```yaml
+dependencies:
+  mineral:
+    path: ../core
+
+  # Optional
+  mineral_cache:
+    path: ../cache
+```
+
+```bash
+dart pub get
+```
+
+:::

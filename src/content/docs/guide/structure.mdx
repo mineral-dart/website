@@ -3,8 +3,9 @@ title: Structure
 description: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 permalink: structure
 icon: lucide:folder-tree
-order: 2
+order: 3
 ---
+
 # Structure
 
 The folder structure of a project is very important.
@@ -76,6 +77,7 @@ This involves dividing your application into several business modules that are i
 ```
 
 This architecture has several notable advantages: it allows you to:
+
 - divide your application code into modules, each representing a business fragment
 - simplifies the integration of your code across multiple projects thanks to [`providers`](/docs/api/providers)
 
@@ -85,6 +87,7 @@ To simplify the management of your modules, we recommend that you create a `prov
 serve as the entry point for each module.
 
 :::code-group labels=[main.dart, module/provider.dart]
+
 ```dart
 final client = Client()
   .registerProvider(Provider.new) // [!code ++]
@@ -101,6 +104,7 @@ final class Provider extends Provider {
   }
 }
 ```
+
 :::
 
 ---
@@ -143,12 +147,12 @@ responsibility within it.
 The above structure is an example that we recommend to help you adopt a modular, scalable and maintainable architecture by decoupling the different parts of your application as much as possible.
 However, it will not always suit your business needs and will need to be adapted accordingly.
 
-| Directory | Description |
-|----------|-------------|
-| `ui` | Contains the various parts of your application which are related to your business, including `events` and `commands`. |
-| `services` | Contains the services which allow you to manipulate the data in your application; they will generally be used from the `ui`. |
-| `data` | Contains the DTOs and repositories that allow you to manipulate the data in your application. An example of use is the use of a remote REST service to which you need to make HTTP calls. |
-| `provider` | The entry point of your module who's call under the `main` file. |
+| Directory  | Description                                                                                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ui`       | Contains the various parts of your application which are related to your business, including `events` and `commands`.                                                                     |
+| `services` | Contains the services which allow you to manipulate the data in your application; they will generally be used from the `ui`.                                                              |
+| `data`     | Contains the DTOs and repositories that allow you to manipulate the data in your application. An example of use is the use of a remote REST service to which you need to make HTTP calls. |
+| `provider` | The entry point of your module who's call under the `main` file.                                                                                                                          |
 
 ---
 
@@ -183,24 +187,25 @@ responsibility within it.
 │     └── tickets
 │        ├── repositories
 │        └── dtos
-│   
+│
 ├── pubspec.yaml
 └── .env
 ```
 
 This architecture has several notable advantages: it allows you to:
+
 - divide your application code into modules, each representing a business fragment
 - simplifies the integration of your code across multiple projects thanks to [`providers`](/docs/api/providers)
 - isolate the business logic of your application from the infrastructure layer
 
 The `application` directory contains all of our business context divided into modules, allowing better readability and maintainability of our code.
 
-| Directory | Description |
-|----------|-------------|
-| `bin` | Contains the entry point of your application. |
-| `application` | Contains the various parts of your application which are related to your business, including `events`, `commands`, `states` or any mineral component, it can be split into modules. |
-| `domain` | Contains the entities, DTOs, repositories, contracts that allow you to manipulate the data in your application. He contains the business logic of your application and must not depend on anything other than itself. |
-| `infrastructure` | Contains implementations that must interact with external services such as APIs, BDDs and queues. Each implementation must implement a contract defined in the domain. |
+| Directory        | Description                                                                                                                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bin`            | Contains the entry point of your application.                                                                                                                                                                         |
+| `application`    | Contains the various parts of your application which are related to your business, including `events`, `commands`, `states` or any mineral component, it can be split into modules.                                   |
+| `domain`         | Contains the entities, DTOs, repositories, contracts that allow you to manipulate the data in your application. He contains the business logic of your application and must not depend on anything other than itself. |
+| `infrastructure` | Contains implementations that must interact with external services such as APIs, BDDs and queues. Each implementation must implement a contract defined in the domain.                                                |
 
 > [!note]
 > You can find a sample implementation of this architecture [here](https://github.com/LeadcodeDev/mineral_beta_bot_demo).
