@@ -1,0 +1,168 @@
+---
+title: "Data structure in Mineral"
+description: "The data structure is at the heart of every IT project, playing a decisive role from the earliest design stages."
+permalink: "data-structure-migration"
+authors:
+  - leadcode_dev
+thumbnail: /blog/data_structure_thumbnail.png
+publishedAt: 2024-01-01:23:00:00
+---
+
+The data structure is at the heart of every IT project, playing a decisive role from the earliest design stages.
+
+It defines the way in which information is organised, stored and manipulated, directly influencing the application's performance, maintainability and scalability.
+
+So, in accordance with the Discord.js library, we chose to load all the data available for a single Discord server when accessed from any model.
+
+> [!important]
+> This article retraces the journey of the data structure migration in Mineral, from the initial design to the final implementation.
+
+---
+
+## Context
+
+Basically, we wanted Mineral to be able to offer data models ready for immediate use by the end developer.
+
+So, in accordance with the [`Discord.js`](https://discord.js.org) library, we chose to load all the data available for a single Discord server from any model.
+
+This choice implies that each time we receive an event from the Discord websocket client, we have to serialise the data that is the subject of our event, as well as everything that is accessible to it, whatever the level of depth.
+
+As each structure had to be able to be traced back to its parent (and vice versa), we soon found ourselves having to serialise a huge amount of data for a **simple structure**.
+
+An example may seem more concrete to you.
+
+---
+
+## Issues
+
+Let's say we receive the `MessageCreate` event from Discord's websocket client, we need to write our handler in this way.
+
+:::code-group labels=[main.dart]
+
+```dart
+client.events.server.messageCreate((ServerMessage message) {
+  // Our code
+});
+```
+
+:::
+
+### Serialisation is costly
+
+Following this premise, we need to allow access to our Discord server from our `message` model, to do this we chain together something like `message.channel.server`.
+
+Behind the simplicity of this chain, there are a number of implications
+
+1. The message must contain a complete structure of the `Channel` into which it was sent.
+2. The `Channel` must be able to make accessible the complete structure of the `Server` in which it evolves.
+3. The `Server` model embeds a whole set of properties including its own `channels`, `members`, `roles`... which, for each of them, must also make it possible to trace back to itself...
+
+And so on...
+
+All these structures, nested in a multitude of levels, generate enormous computational complexity and have a significant impact on the cost of serialising each data structure.
+
+Our main concern is the difficulty of serialisation with which even the smallest data structure will be confronted.
+
+So we increase the computational complexity, again and again.
+
+It is important to note that a complex data structure is transmitted to the client even if it does not require any level of depth.
+
+:::code-group labels=[main.dart]
+
+```dart
+client.events.server.messageCreate((ServerMessage message) {
+  await message.reply(content: 'Hello World');
+});
+```
+
+:::
+
+In this case, even though we only need the instance of our message, at no point do we use a `message.channel.server` chain; and yet the server is indeed serialized and supplied to the client.
+
+### Cache dependency
+
+Our philosophy is not to impose anything on developers.
+One of our promises is not to impose the use of any caching solution.
+
+Behind this promise, we want the framework to be able to be offered as a stable and viable solution for any project.
+
+In this section, we will use the `Discord.js` library as a reference for comparison.
+
+This library imposes the use of an in-memory caching solution, which allows it to offer complex data structures such as those described above, allowing developers to access almost any property or action available on the Discord server.
+
+The choice of imposing a caching solution actually hides a deeper problem that introduces excessive consumption of the memory used by the application.
+Conversely, not using a memory cache in the Discord.js library makes it impossible to deliver these complex data structures.
+
+It is possible to envisage a system that introduces a notion of `lifespan` or `life cycle` of the data, but it is up to the developer to work this out.
+
+---
+
+## Solution adopted
+
+In order to overcome all the problems explained above, we decided to drastically reduce the size of our data structures to make them as minimalist and atomic as possible.
+
+This choice has enabled us to...
+
+- reduce the dependency of each data structure on the others
+- reduce the size of our data structures
+- reduce serialisation time
+- reduce the overall complexity of using a resource
+- eliminate potential errors linked to the absence of properties required for complete serialisation of the complex data structure
+- eliminate dependency on a caching solution
+
+### Impact on DX
+
+It is important to note that these profound changes will result in a modification of the development experience for the end user.
+
+As each delivered structure is smaller, the developer will have to explicitly request the retrieval of certain resources required for his business context.
+
+An example of this is the retrieval of a server from a `Channel` using a newly introduced function `resolveServer()`.
+
+We selected the term `resolve` in a very specific case where our data model contains every piece of information needed to construct an HTTP request (usually to retrieve a resource) without any additional parameters being requested from the developer.
+
+We can now see a new way of accessing our data.
+
+```dart
+client.events.server.messageCreate((ServerMessage message) async {
+  if (message.authorIsBot) {
+    return;
+  }
+
+  final (channel, author) = await (
+    message.resolveChannel(),
+    message.resolveMember()
+  ).wait;
+
+  final str = 'Hello from ${author.username} in ${channel.name}';
+  await message.reply(content: str);
+});
+```
+
+### Caching
+
+We have already stated our desire to allow the end developer to dispense with any caching solution, but make no mistake, it is still extremely interesting and important within your applications.
+
+Using it will drastically reduce the execution time of your code while reducing the number of requests to the Discord API, thereby reducing the risk of a `rate-limit`.
+
+The current procedure is as follows.
+
+[![Data flow](https://mermaid.ink/img/pako:eNqNUkFqwzAQ_IrQqQXnA8IESgylh5TQ3oovW2kTC2QpXUmlaQj0NX1YX1LJdpyQGNo9rTSjmZG0ey6dQi64x7eIVmKlYUPQ1pal2gIFLfUWbGCV9tKRYuDH9m71cM1bgGwws7pmRe5dK6TyleY3LbaOdgUjVNr_fH3fTrh0-hDAB0d4jS8zvgTyDRiDNGHfWRuNNtS2hxez-bwS7BFRMdmAtWiY0KoHwRwja8-ix2E7V1WW6WQHCnaPiTccXpNrWZP4-ozdCQ0E_NA--BPWpcg6sywo2BOGSPY6TC40Hkch68KkWB9t-Ic-nDwPN_7MeGB2usoqhiRMLRj9mZ5k8LrknwddTAa1wyInvny1f0b7w6az4AVvMaXVKo3pPgM1Dw22WHORWoVriCbUvLaHRIUY3PPOSi4CRSw4ubhpuFhDClnwuFUQjjM-7qbBeXHuuD78Aiut96A?type=png)](https://mermaid.live/edit#pako:eNqNUkFqwzAQ_IrQqQXnA8IESgylh5TQ3oovW2kTC2QpXUmlaQj0NX1YX1LJdpyQGNo9rTSjmZG0ey6dQi64x7eIVmKlYUPQ1pal2gIFLfUWbGCV9tKRYuDH9m71cM1bgGwws7pmRe5dK6TyleY3LbaOdgUjVNr_fH3fTrh0-hDAB0d4jS8zvgTyDRiDNGHfWRuNNtS2hxez-bwS7BFRMdmAtWiY0KoHwRwja8-ix2E7V1WW6WQHCnaPiTccXpNrWZP4-ozdCQ0E_NA--BPWpcg6sywo2BOGSPY6TC40Hkch68KkWB9t-Ic-nDwPN_7MeGB2usoqhiRMLRj9mZ5k8LrknwddTAa1wyInvny1f0b7w6az4AVvMaXVKo3pPgM1Dw22WHORWoVriCbUvLaHRIUY3PPOSi4CRSw4ubhpuFhDClnwuFUQjjM-7qbBeXHuuD78Aiut96A)
+
+There are 2 possible uses for it:
+
+#### Without cache
+
+When no caching solution is used, the `Datastore` will make a direct HTTP request to the Discord API to obtain the result, then serialise it and send it back to the consumer.
+
+#### With Cache
+
+In this case, there are two possible scenarios.
+
+1. **The cache has the data** : The datastore contacts the caching solution, then retrieves the result, serialises it and sends it to the consumer.
+2. **The cache does not have the data** : In this case, the `Datastore` will make an HTTP request to the Discord API to retrieve the result. The result is then pushed into the cache, serialized and sent back to the consumer.
+
+**Credits**
+We would like to thank [Lexedia](https://github.com/Lexedia) and [Abitofevrything](https://github.com/abitofevrything) from the [Nyxx](https://github.com/nyxx-discord/nyxx) team for the discussions and advice that led to this result.
+
+> [!note]
+> This article is available in [Dev.to](https://dev.to/mineral-foundation/data-structure-in-mineral-3gfn) platform.

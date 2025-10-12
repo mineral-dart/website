@@ -82,6 +82,7 @@ h6 {
     }
 
     ol > li {
+        padding-top: 0.5rem;
         position: relative;
         counter-increment: list-counter;
         padding-left: 1.75em;
