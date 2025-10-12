@@ -5,7 +5,11 @@ export default defineExplainerConfig({
     title: "Mineral framework",
     description:
       "Mineral is a Discord framework for designing discord bots in Dart",
-    thumbnail: "https://placehold.co/1200x630",
+    favicon: {
+      href: "/favicon.ico",
+      type: "image/svg+xml",
+    },
+    thumbnail: "/thumbnail.jpg",
   },
   urls: {
     github: "https://github.com/mineral-dart/core",
