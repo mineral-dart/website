@@ -5,4 +5,250 @@ permalink: interactive-components
 icon: lucide:mouse-pointer-2
 order: 5
 ---
+
 # Interactive Components
+
+Interactive components are a turnkey solution that allow you to drastically simplify your code and
+make your code easier to read and understand.
+
+---
+
+## Introduction
+
+The platform provides a number of components that we have explained [here](/docs/api/components).
+There are three precise steps to using them:
+
+1. Define the component
+2. Send it to Discord
+3. Reaction to its use by a user.
+
+We can define the use of a component (in this case, a button) using the following example.
+
+### Create our component
+
+First of all, we're going to create our component so that we can use it later.
+This declaration can be made within a handler or anywhere else in your application.
+
+```dart
+final button = ButtonBuilder.primary('customId',
+  label: 'Click me',
+  emoji: PartialEmoji.fromUnicode('👍'),
+  disabled: true,
+);
+```
+
+### Send to Discord
+
+For our example, we'll take the case where we want to send our component when a user writes a message on a Discord server.
+
+So we'll use the `MessageCreateEvent` event.
+
+```dart
+void main(_, port) async {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .build();
+
+  client.events.server.messageCreate((ServerMessage message) async {
+    if (!message.authorIsBot) {
+      final channel = await message.resolveMember();
+
+      final builder = MessageComponentBuilder()
+        ..text('# Hello from World')
+        // [!code ++]
+        ..button(button);
+
+      await channel.reply(builder);
+    }
+  });
+
+  await client.init();
+}
+```
+
+### Reaction to its use by a user
+
+Now that a user has clicked on our button, we want to be able to send them an ephemeral message.
+
+```dart
+client.events.interaction.buttonClick((ButtonContext ctx) async {
+  if (ctx case ServerButtonContext(:final interaction)) {
+    final builder = MessageComponentBuilder()
+      ..text('# Thanks for clicking on the button');
+
+    await interaction.reply(builder);
+  }
+});
+```
+
+As we have seen, the use of simple components quickly becomes "heavy" to manage.
+
+That's why we're proposing a new approach: `interactive components`.
+
+---
+
+## Create your own interactive components
+
+Interactive components are a turnkey solution designed to considerably simplify all these processes through a more declarative approach.
+
+A component is nothing more or less than a class comprising 3 main elements:
+
+1. `customId`: the unique identifier of the component
+2. `build`: the method used to build the component
+3. `handler`: the method used to react to the use of the component
+
+---
+
+### Choosing the customId
+
+First we will declare the `customId` property of our component.
+
+> [!important]
+> This property must be unique for each component within the same application
+
+```dart
+final class MyButton implements InteractiveButton {
+  // [!code ++:2]
+  @override
+  String get customId => 'button::test';
+}
+```
+
+---
+
+### Component definition
+
+We design the component to be sent to the platform.
+
+```dart
+final class MyButton implements InteractiveButton {
+  @override
+  String get customId => 'button::test';
+
+  // [!code ++:7]
+  @override
+  ButtonBuilderContract build() {
+    return ButtonBuilder.primary(customId,
+      label: 'Click me',
+      emoji: PartialEmoji.fromUnicode('👍'),
+      disabled: true,
+    );
+  }
+}
+```
+
+---
+
+### Handling the component
+
+We apply a behaviour to the action performed by a user
+
+> [!note]
+> Within the handler, it's important to note that we don't know the context in which the button was clicked, so you'll have to check this manually
+
+```dart
+final class MyButton implements InteractiveButton {
+  @override
+  String get customId => 'button::test';
+
+  // [!code ++:9]
+  @override
+  Future<void> handle(ButtonContext ctx) async {
+    if (ctx case ServerButtonContext(:final interaction)) {
+      final builder = MessageComponentBuilder()
+        ..text('# Hello from World');
+
+      await interaction.reply(builder);
+    }
+  }
+
+  @override
+  ButtonBuilderContract build() {
+    return ButtonBuilder.primary(customId,
+      label: 'Click me',
+      emoji: PartialEmoji.fromUnicode('👍'),
+      disabled: true,
+    );
+  }
+}
+```
+
+---
+
+### Registering the component
+
+Finally, we register our component in the client.
+
+```dart
+void main() async {
+  final client = ClientBuilder()
+    .setHmrDevPort(port)
+    .build();
+
+  // [!code ++]
+  client.register(MyButton.new);
+
+  await client.init();
+}
+```
+
+## Use your component
+
+Using the example above, it would be usual to instantiate our interactive component and then call the `build()` method to retrieve the component builder.
+
+This approach is indeed the right one, with one small exception: your component will have to be instantiated N times to be used N times.
+
+To avoid this unnecessary re-instantiation, we provide a service that allows you to retrieve a single instance of your interactive component.
+
+> [!note]
+> We assume that no two components can have the same `customId`.
+
+In a relatively functional approach, we provide an access point to your registered components from the `client` instance.
+
+```dart
+client.events.server.messageCreate((ServerMessage message) async {
+  if (!message.authorIsBot) {
+    final channel = await message.resolveChannel<ServerTextChannel>();
+
+    // [!code --]
+    final button = MyButton();
+    // [!code ++]
+    final button = client.components.get('button::test');
+
+    final builder = MessageComponentBuilder()
+      ..text('# Hello from World')
+      // [!code ++]
+      ..button(button.build());
+
+    await message.reply(builder);
+  }
+});
+```
+
+In the case of a class, we provide a `Component` mixin which allows you to access all the interactive components registered in your application.
+
+```dart
+final class FooCommand with Component implements CommandDefinition {
+  Future<void> handle(ServerCommandContext ctx) async {
+    // [!code --]
+    final button = MyButton();
+    // [!code ++]
+    final button = client.components.get('button::test');
+
+    final builder = MessageComponentBuilder()
+      ..text('# Hello from World')
+      // [!code ++]
+      ..button(button.build());
+
+    await ctx.interaction.reply(builder);
+  }
+
+  @override
+  CommandDefinitionBuilder build() {
+    return CommandDefinitionBuilder()
+      ..using(File('lib/commands.yaml'))
+      ..setHandler('handle', handle);
+  }
+}
+
+```
