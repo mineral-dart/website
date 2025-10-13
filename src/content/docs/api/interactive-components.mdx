@@ -233,7 +233,7 @@ final class FooCommand with Component implements CommandDefinition {
     // [!code --]
     final button = MyButton();
     // [!code ++]
-    final button = client.components.get('button::test');
+    final button = components.get('button::test');
 
     final builder = MessageComponentBuilder()
       ..text('# Hello from World')
