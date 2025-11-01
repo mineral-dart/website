@@ -53,7 +53,8 @@ Action buttons are buttons that allow you to interact with the bot.
 :::code-group labels=[Primary, Secondary, Success, Danger]
 
 ```dart
-final primary = ButtonBuilder.primary('customId',
+final primary = ButtonBuilder.primary(
+  'customId',
   label: 'Click me',
   emoji: PartialEmoji.fromUnicode('👍'),
   disabled: true,
@@ -61,7 +62,8 @@ final primary = ButtonBuilder.primary('customId',
 ```
 
 ```dart
-final secondary = ButtonBuilder.secondary('customId',
+final secondary = ButtonBuilder.secondary(
+  'customId',
   label: 'Click me',
   emoji: PartialEmoji.fromUnicode('🚀'),
   disabled: true,
@@ -69,7 +71,8 @@ final secondary = ButtonBuilder.secondary('customId',
 ```
 
 ```dart
-final success = ButtonBuilder.success('customId',
+final success = ButtonBuilder.success(
+  'customId',
   label: 'Click me',
   emoji: PartialEmoji.fromUnicode('✅'),
   disabled: true,
@@ -77,7 +80,8 @@ final success = ButtonBuilder.success('customId',
 ```
 
 ```dart
-final danger = ButtonBuilder.danger('customId',
+final danger = ButtonBuilder.danger(
+  'customId',
   label: 'Click me',
   emoji: PartialEmoji.fromUnicode('❌'),
   disabled: true,
@@ -125,7 +129,7 @@ final buttons = [
   MessageButton.link('https://google.com', label: 'label'),
 ];
 
-final builder = MessageComponentBuilder()
+final builder = MessageBuilder()
   ..text('# Hello from World')
   ..buttons(buttons);
 
@@ -134,75 +138,74 @@ await channel.send(builder);
 
 ---
 
-## Dialogs
+## Modals
 
 Modals in Discord are interactive pop-up windows that allow users to input information or make specific choices.
 
 They are used for more complex interactions, such as filling out forms or confirming important actions, enhancing the user experience by providing a richer and more intuitive interface.
 
 > [!note]
-> The `customId` property is mandatory for dialogs.
+> The `customId` property is mandatory for modals.
 
-:::code-group labels=[Dialog builder]
+:::code-group labels=[Modal builder]
 
 ```dart
-final text = DialogBuilder(customId)
-  ..setTitle('Test Dialog')
-  ..text(
-    title: 'This is a test dialog',
-    customId: 'title',
-    constraint: DialogFieldConstraint(maxLength: 20))
-  ..paragraph(
-    title: 'This is a test paragraph',
-    customId: 'paragraph',
-    constraint: DialogFieldConstraint(maxLength: 20));
+final modal = ModalBuilder(customId)
+  ..setTitle("Modal title")
+  ..text("# Some markdown compatible text")
+  ..label(
+    label: "A label wrapping a component",
+    description: "Some optional description",
+    component: ModalTextInput(
+      "textInputID",
+      style: ModalTextInputStyle.short,
+      isRequired: false,
+      minLength: 10,
+      maxLength: 100,
+      placeholder: "Some default value",
+    ),
+  )
+  ..label(
+    label: "Another label",
+    description: "Some optional description",
+    component: SelectMenu.role("selectMenuId", maxValues: 3),
+  );
 ```
 
 :::
 
-### Sending dialogs
+### Sending modals
 
 > [!note]
-> Dialogs in Discord can only be used in response to a user interaction.
+> Modals in Discord can only be used in response to a user interaction.
 
 This means they must be triggered by a specific user action, such as clicking a button or using a command.
 
-This restriction ensures that dialogs are always relevant and contextual, thereby enhancing the user experience by providing information or choices at the appropriate time.
+This restriction ensures that modals are always relevant and contextual, thereby enhancing the user experience by providing information or choices at the appropriate time.
 
 ```dart
-final text = DialogBuilder(customId)
-  ..setTitle('Test Dialog')
-  ..text(
-    title: 'This is a test dialog',
-    customId: 'title',
-    constraint: DialogFieldConstraint(maxLength: 20))
-  ..paragraph(
-    title: 'This is a test paragraph',
-    customId: 'paragraph',
-    constraint: DialogFieldConstraint(maxLength: 20));
-
 // [!code ++]
-await ctx.interaction.dialog(dialog);
+await ctx.interaction.modal(modal);
 ```
 
-### Handing dialogs
+### Handing modals
 
-Basiquement, vous pouvez écouter l'évènement de deux manières différentes.
-Par défaut, l'évènement catch l'ensemble des interactions de type `ServerDialogSubmitEvent`.
+Basically, you can listen to the event in two different ways.  
+By default, the event catches all interactions of type `ServerModalSubmitEvent`.
 
 :::code-group labels=[Class, Function]
 
 ```dart
-final class MyDialogEvent extends ServerDialogSubmitEvent {
+final class MyModalEvent extends ServerModalSubmitEvent {
   FutureOr<void> handle(ctx, options) {
-    // Handle dialog submit
+    // Handle modal submit
   }
 }
 ```
 
 ```dart
-client.events.server.dialogSubmit((ctx, options) {
-  // Handle dialog submit
+client.events.server.modalSubmit((ctx, options) {
+  // Handle modal submit
 });
 ```
 
@@ -213,21 +216,21 @@ However, it is possible to choose just one component to listen to, using its `cu
 :::code-group labels=[Class, Function]
 
 ```dart
-final class MyDialogEvent implements ServerDialogSubmitEvent {
+final class MyModalEvent implements ServerModalSubmitEvent {
   // [!code ++:2]
   @override
   String? get customId => 'customId';
 
   @override
   FutureOr<void> handle(ctx, options) {
-    // Handle dialog submit when customId is 'customId'
+    // Handle modal submit when customId is 'customId'
   }
 }
 ```
 
 ```dart
-client.events.server.dialogSubmit((ctx, options) {
-  // Handle dialog submit when customId is 'customId'
+client.events.server.modalSubmit((ctx, options) {
+  // Handle modal submit when customId is 'customId'
 // [!code --]
 });
 // [!code ++]
@@ -262,12 +265,12 @@ final helloEmoji = PartialEmoji.fromUnicode('👋');
 final worldEmoji = PartialEmoji.fromUnicode('🌍');
 
 // [!code ++:4]
-final selectMenu = MessageMenu.text('text', [
+final selectMenu = SelectMenu.text('text', [
   SelectMenuOption(label: 'label 1', value: 'value 1'),
   SelectMenuOption(label: 'label 2', value: 'value 2'),
 ]);
 
-final builder = MessageComponentBuilder()
+final builder = MessageBuilder()
   ..text('# Hello from World')
   // [!code ++:1]
   ..selectMenu(selectMenu);
@@ -278,7 +281,7 @@ await channel.send(builder);
 
 ```dart
 client.events.server.selectText((ctx, values) async {
-  final builder = MessageComponentBuilder()
+  final builder = MessageBuilder()
     ..text('Find ${values.length} channels ($channelNames)');
 
   await ctx.interaction.reply(builder: builder, ephemeral: true);
@@ -293,7 +296,7 @@ final class MyTextSelect extends ServerTextSelectEvent {
 
   @override
   FutureOr<void> handle(ServerSelectContext ctx, List<String> values) async {
-    final builder = MessageComponentBuilder()
+    final builder = MessageBuilder()
       ..text('Find ${values.length} channels ($channelNames)');
 
     await ctx.interaction.reply(builder: builder, ephemeral: true);
@@ -309,11 +312,11 @@ final class MyTextSelect extends ServerTextSelectEvent {
 
 ```dart
 // [!code ++:3]
-final channelSelectMenu = MessageMenu.channel('channel',
+final channelSelectMenu = SelectMenu.channel('channel',
   channelTypes: [ChannelType.guildText],
   defaultValues: [Snowflake.parse('1322554770057068636')]);
 
-final builder = MessageComponentBuilder()
+final builder = MessageBuilder()
   ..text('# Hello from World')
   // [!code ++]
   ..selectMenu(channelSelectMenu));
@@ -326,7 +329,7 @@ await channel.send(builder);
 client.events.server.selectText((ctx, channels) async {
   final channelNames = channels.map((channel) => channel.name);
 
-  final builder = MessageComponentBuilder()
+  final builder = MessageBuilder()
     ..text('${values.length} channels ($channelNames)');
 
   await ctx.interaction.reply(builder: builder, ephemeral: true);
@@ -341,7 +344,7 @@ final class MyChannelSelect extends ServerChannelSelectEvent {
 
   @override
   FutureOr<void> handle(ServerSelectContext ctx, List<ServerChannel> channels) async {
-    final builder = MessageComponentBuilder()
+    final builder = MessageBuilder()
       ..text('Find ${values.length} channels ($channelNames)');
 
     await ctx.interaction.reply(builder: builder, ephemeral: true);
