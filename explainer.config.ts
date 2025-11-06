@@ -13,8 +13,8 @@ export default defineExplainerConfig({
   },
   urls: {
     github: "https://github.com/mineral-dart/core",
-    getStarted: "/docs/framework/getting-started",
-    documentation: "/docs/framework/installation",
+    getStarted: "/docs/guide/installation",
+    documentation: "/docs/preface/welcome",
   },
   docs: {
     _default: {
@@ -72,22 +72,26 @@ export default defineExplainerConfig({
       items: [
         {
           label: "Guide",
-          description: "Build your first bot with the following guide.",
+          description:
+            "Design your first application step by step, from setup to deployment.",
           href: "/docs/guide/installation",
         },
         {
           label: "API",
-          description: "Learn the API of the framework.",
-          href: "/docs/api/events",
+          description:
+            "Learn how to effectively use each framework component that enables interaction with Discord.",
+          href: "/docs/api/environment-variables",
         },
         {
           label: "Concepts",
-          description: "Learn the concepts of the framework.",
+          description:
+            "Discover and learn how each essential component of the framework works.",
           href: "/docs/concepts/immutability",
         },
         {
           label: "Examples",
-          description: "Learn the examples of the framework.",
+          description:
+            "Find several boilerplates as well as concrete examples of implementation.",
           href: "/docs/examples/ping-pong",
         },
       ],
@@ -104,7 +108,7 @@ export default defineExplainerConfig({
   ],
   social: {
     github: {
-      href: "https://github.com/LeadcodeDev/explainer",
+      href: "https://github.com/mineral-dart",
       icon: "mdi:github",
     },
   },
