@@ -192,7 +192,7 @@ const bentogrid: BentoGridProps = {
     <div class="relative flex items-center justify-center min-h-[60vh]">
       <BackgroundAnimation client:only />
       <img
-        class="animate-up-down-fast parallax hidden md:block absolute top-4/5 right-0 md:left-32 z-0 w-32 md:w-48"
+        class="animate-up-down-fast parallax hidden md:block absolute top-7/8 right-0 md:left-32 z-0 w-32 md:w-48"
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
         sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
@@ -225,7 +225,7 @@ const bentogrid: BentoGridProps = {
         loading="eager"
         width={1024}
         height={576}
-        data-speed="0"
+        data-speed="-10"
         src="/cristals/cristal_3.png"
         alt="Cristal"
       />
@@ -322,7 +322,7 @@ const bentogrid: BentoGridProps = {
     {
       posts.length && (
         <div class="max-w-screen-xl mx-auto">
-          <HomeBlog posts={posts} client:load />
+          <HomeBlog posts={posts.reverse()} client:load />
         </div>
       )
     }
@@ -334,8 +334,10 @@ const bentogrid: BentoGridProps = {
     const parallaxElements = document.querySelectorAll(".parallax");
     parallaxElements.forEach((element) => {
       const speed = element.getAttribute("data-speed");
-      const yPos = -((window.scrollY * speed) / 100);
-      element.style.transform = `translateY(${yPos}px)`;
+      if (!speed) return;
+
+      const yPos = -((window.scrollY * +speed) / 100);
+      (element as HTMLImageElement).style.transform = `translateY(${yPos}px)`;
     });
   });
 </script>
