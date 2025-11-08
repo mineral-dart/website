@@ -1,10 +1,10 @@
-import type { CollectionEntry } from 'astro:content';
-import config from '../../../../explainer.config';
-import { Badge } from '../ui/badge';
+import type { CollectionEntry } from "astro:content";
+import config from "../../../../explainer.config";
+import { Badge } from "../ui/badge";
 
 type Props = {
-  post: CollectionEntry<"blog">
-}
+  post: CollectionEntry<"blog">;
+};
 
 export default function BlogCard(props: Props) {
   return (
@@ -14,9 +14,7 @@ export default function BlogCard(props: Props) {
     >
       {import.meta.env.DEV && !props.post.data.publishedAt && (
         <div className="absolute z-50 top-1 right-2">
-          <Badge variant="default">
-            Invisible in production mode
-          </Badge>
+          <Badge variant="default">Invisible in production mode</Badge>
         </div>
       )}
       <div className="overflow-hidden rounded-lg">
@@ -76,5 +74,5 @@ export default function BlogCard(props: Props) {
         </div>
       </div>
     </a>
-  )
+  );
 }

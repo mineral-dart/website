@@ -6,7 +6,7 @@ export default defineExplainerConfig({
     description:
       "Mineral is a Discord framework for designing discord bots in Dart",
     favicon: {
-      href: "/favicon.ico",
+      href: "/favicon.svg",
       type: "image/svg+xml",
     },
     thumbnail: "/thumbnail.jpg",
@@ -60,7 +60,7 @@ export default defineExplainerConfig({
     },
     authors: {
       leadcode_dev: {
-        name: "LeadcodeDev",
+        name: "Baptiste Parmantier",
         avatar: "https://avatars.githubusercontent.com/u/8946317?v=4",
         href: "https://github.com/LeadcodeDev",
       },

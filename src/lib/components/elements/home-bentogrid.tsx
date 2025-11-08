@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import clsx from "clsx";
 
 export type BentoGridProps = {
   title: string;
@@ -10,7 +10,7 @@ export type BentoGridProps = {
     subtitle: string;
     image: string;
   }[];
-}
+};
 
 export function HomeBentogrid(props: BentoGridProps) {
   const firstLine = props.items.slice(0, 2);
@@ -34,16 +34,17 @@ export function HomeBentogrid(props: BentoGridProps) {
               <div className="absolute inset-px rounded-lg bg-background max-lg:rounded-t-[2rem]" />
               <div
                 className={clsx(
-                  'absolute inset-px rounded-lg bg-background max-lg:rounded-t-[2rem]',
-                  index === 0 && 'lg:rounded-tl-[2rem]',
-                  index === firstLine.length - 1 && 'lg:rounded-tr-[2rem]',
+                  "absolute inset-px rounded-lg bg-background max-lg:rounded-t-[2rem]",
+                  index === 0 && "lg:rounded-tl-[2rem]",
+                  index === firstLine.length - 1 && "lg:rounded-tr-[2rem]",
                 )}
               />
               <div
                 className={clsx(
-                  'relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)]',
-                  index === 0 && 'lg:rounded-tl-[calc(2rem+1px)]',
-                  index === firstLine.length - 1 && 'lg:rounded-tr-[calc(2rem+1px)]',
+                  "relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)]",
+                  index === 0 && "lg:rounded-tl-[calc(2rem+1px)]",
+                  index === firstLine.length - 1 &&
+                    "lg:rounded-tr-[calc(2rem+1px)]",
                 )}
               >
                 <img
@@ -51,8 +52,10 @@ export function HomeBentogrid(props: BentoGridProps) {
                   src={item.image}
                   className="h-80 object-cover object-left"
                 />
-                <div className="p-10 pt-4">
-                  <h3 className="text-sm/4 font-semibold text-primary">{item.title}</h3>
+                <div className="px-8 pt-6">
+                  <h3 className="text-sm/4 font-semibold text-primary">
+                    {item.title}
+                  </h3>
                   <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 dark:text-accent-foreground">
                     {item.subtitle}
                   </p>
@@ -63,9 +66,9 @@ export function HomeBentogrid(props: BentoGridProps) {
               </div>
               <div
                 className={clsx(
-                  'pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5',
-                  index === 0 && 'lg:rounded-tl-[2rem]',
-                  index === firstLine.length - 1 && 'lg:rounded-tr-[2rem]',
+                  "pointer-events-none absolute inset-px dark:border rounded-lg shadow ring-1 ring-black/5",
+                  index === 0 && "lg:rounded-tl-[2rem]",
+                  index === firstLine.length - 1 && "lg:rounded-tr-[2rem]",
                 )}
               />
             </div>
@@ -80,8 +83,10 @@ export function HomeBentogrid(props: BentoGridProps) {
                   src={item.image}
                   className="h-80 object-cover object-left"
                 />
-                <div className="p-10 pt-4">
-                  <h3 className="text-sm/4 font-semibold text-primary">{item.title}</h3>
+                <div className="px-8 py-4">
+                  <h3 className="text-sm/4 font-semibold text-primary">
+                    {item.title}
+                  </h3>
                   <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 dark:text-accent-foreground">
                     {item.subtitle}
                   </p>
@@ -92,9 +97,9 @@ export function HomeBentogrid(props: BentoGridProps) {
               </div>
               <div
                 className={clsx(
-                  'pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5',
-                  index === 0 && 'lg:rounded-bl-[2rem]',
-                  index === secondLine.length - 1 && 'lg:rounded-br-[2rem]',
+                  "pointer-events-none absolute inset-px dark:border rounded-lg shadow ring-1 ring-black/5",
+                  index === 0 && "lg:rounded-bl-[2rem]",
+                  index === secondLine.length - 1 && "lg:rounded-br-[2rem]",
                 )}
               />
             </div>
@@ -102,5 +107,5 @@ export function HomeBentogrid(props: BentoGridProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
