@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/base.astro'
+import { Navbar, Footer } from '@explainer/ui'
+import { siteConfig } from '../config'
+import NotFoundContent from '../components/not-found-content.astro'
+
+const appUrlOverrides = {
+  website: import.meta.env.PUBLIC_WEBSITE_URL,
+  docs: import.meta.env.PUBLIC_DOCS_URL,
+  blog: import.meta.env.PUBLIC_BLOG_URL,
+}
+---
+
+<Base title="404 — Page not found">
+  <Navbar
+    currentApp="docs"
+    appUrlOverrides={appUrlOverrides}
+    breakpoint="lg"
+    className="border-b"
+    client:load
+    transition:persist
+  />
+
+  <main class="flex-1 flex flex-col items-center justify-center px-6 text-center">
+    <NotFoundContent />
+  </main>
+
+  <div class="mx-auto max-w-6xl px-6 w-full">
+    <Footer config={siteConfig} appUrlOverrides={appUrlOverrides} client:load />
+  </div>
+</Base>

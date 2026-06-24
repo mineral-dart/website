@@ -1,0 +1,21 @@
+import { defineCollection, z } from 'astro:content'
+import { glob } from 'astro/loaders'
+
+const docs = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/docs' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    permalink: z.string().optional(),
+    icon: z.string().optional(),
+    order: z.number().optional(),
+    auth: z
+      .object({
+        enabled: z.boolean().optional(),
+        roles: z.array(z.string()).optional(),
+      })
+      .optional(),
+  }),
+})
+
+export const collections = { docs }

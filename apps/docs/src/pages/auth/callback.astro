@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../layouts/base.astro'
+import { AuthCallback } from '@explainer/auth/react'
+---
+
+<BaseLayout title="Connexion">
+  <AuthCallback client:only="react" />
+</BaseLayout>
